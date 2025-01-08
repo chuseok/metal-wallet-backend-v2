@@ -1,5 +1,7 @@
 <configuration>
-
+    <Logger name="jdbc.sqlonly" level="off" additivity="false">
+        <AppenderRef ref="console" />
+    </Logger>
     <!-- 콘솔 출력 설정 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
