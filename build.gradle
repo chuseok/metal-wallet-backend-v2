@@ -1,0 +1,119 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group 'com.kb'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    junitVersion = '5.9.2'
+    springVersion = '5.3.24'
+    springSecurityVersion = '5.7.3'
+}
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-parameters']
+}
+
+dependencies {
+    // Spring
+    implementation("org.springframework:spring-context:${springVersion}") {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+    implementation "org.springframework:spring-webmvc:${springVersion}"
+    implementation "org.springframework:spring-web:${springVersion}"
+    implementation "org.springframework:spring-aspects:${springVersion}"
+
+    // Spring Data JPA
+    implementation 'org.springframework.data:spring-data-jpa:2.7.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
+
+    // Java EE 8
+    implementation 'javax.persistence:javax.persistence-api:2.2'
+
+    // JPA with Hibernate
+    implementation 'org.hibernate:hibernate-core:5.6.15.Final'
+
+    // Spring Context & ORM
+    implementation 'org.springframework:spring-orm:${springVersion}'
+
+    // MyBatis
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.33'
+    implementation group: 'org.mybatis', name: 'mybatis', version: '3.5.13'
+    implementation group: 'org.mybatis', name: 'mybatis-spring', version: '2.0.6'
+
+    // MyBatis DataSource
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.1.0'
+    implementation group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4.1', version: '1.16'
+
+    // Logback
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'ch.qos.logback:logback-classic:1.3.14'
+
+    // Spring Security
+    implementation("org.springframework.security:spring-security-web:${springSecurityVersion}")
+    implementation("org.springframework.security:spring-security-config:${springSecurityVersion}")
+    implementation("org.springframework.security:spring-security-core:${springSecurityVersion}")
+    implementation("org.springframework.security:spring-security-taglibs:${springSecurityVersion}")
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+    // JJWT
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
+    // Hibernate Validator
+    implementation 'org.hibernate.validator:hibernate-validator:6.2.0.Final'
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+
+    // JSON
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.3'
+
+    // QR
+    implementation group: 'com.google.zxing', name: 'core', version: '3.4.1'
+    implementation group: 'com.google.zxing', name: 'javase', version: '3.4.1'
+
+    // Servlet API for Tomcat 9
+    providedCompile('javax.servlet:javax.servlet-api:4.0.1')
+
+    // BouncyCastle
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.68'
+
+    // JSON Parsing
+    implementation 'org.json:json:20210307'
+
+    // Testing Libraries
+    testImplementation "org.springframework:spring-test:${springVersion}"
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.14.1'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.14.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.26.3'
+
+    // Provides annotations such as @PostConstruct
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+    // Apache Commons DBCP2 (for BasicDataSource)
+    implementation 'org.apache.commons:commons-dbcp2:2.9.0'
+
+    // EL API 추가
+    implementation 'javax.el:javax.el-api:3.0.0'
+    implementation 'org.glassfish:javax.el:3.0.0'
+}
+
+test {
+    useJUnitPlatform()
+}
