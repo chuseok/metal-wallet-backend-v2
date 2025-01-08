@@ -16,12 +16,16 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.transaction.ChainedTransactionManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -83,7 +87,8 @@ public class AppConfig {
     // JPA Properties 설정
     Properties jpaProperties = new Properties();
     //TODO: profile에 따라 분리해야 할 듯
-    jpaProperties.put("hibernate.hbm2ddl.auto", "update"); // 테이블 자동 생성
+    jpaProperties.put("hibernate.hbm2ddl.auto", "create"); // 테이블 자동 생성
+    jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect"); // 방언 처리
     jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력1
     //TODO: 이거 설정하면 로그에 쿼리 여러 번 나오는 거 같음
 //    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 포매팅 출력
@@ -149,4 +154,30 @@ public class AppConfig {
     return new ChainedTransactionManager(jpaTransactionManager, myBatisTransactionManager);
   }
 
+  /*
+   * sql 초기 데이터 세팅
+   * 로컬에서 개발하며 테스트가 필요할 때만 활성화해서 사용할 것
+   */
+  /*@Bean
+  public DataSourceInitializer dataSourceInitializer() {
+    // HACK: db/data.sql 파일이 두 번 실행되는 문제 확인 및 수정 필요
+    // 현재 DataSourceInitializer로 인해 중복 데이터 삽입이 발생하며,
+    // Duplicate entry 오류가 발생하고 있음 (예: 'test1234@gmail.com').
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+    populator.addScript(new ClassPathResource("db/data.sql"));
+
+    DataSourceInitializer initializer = new DataSourceInitializer();
+    initializer.setDataSource(dataSource);
+    initializer.setDatabasePopulator(populator);
+    return initializer;
+  }
+
+  @Bean
+  public org.springframework.context.ApplicationListener<ContextRefreshedEvent> contextRefreshedEventListener(
+      DataSourceInitializer initializer) {
+    return event -> {
+      // JPA 초기화가 완료된 후 DataSourceInitializer 실행
+      initializer.afterPropertiesSet();
+    };
+  }*/
 }
