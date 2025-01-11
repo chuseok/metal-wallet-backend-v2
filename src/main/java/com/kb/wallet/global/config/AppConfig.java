@@ -3,9 +3,11 @@ package com.kb.wallet.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.sql.SQLException;
 import java.util.Properties;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -33,7 +35,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@Import(DataSourceConfig.class)
+@Import({DataSourceConfig.class, JpaConfig.class})
 @ComponentScan(basePackages = {
   "com.kb.wallet"
 })
@@ -63,6 +65,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class AppConfig {
 
   private final DataSource dataSource;
+  private final Properties jpaProperties;
 
   @Bean
   public ObjectMapper objectMapper() {
@@ -73,30 +76,17 @@ public class AppConfig {
     return objectMapper;
   }
 
-
   // JPA 설정
   @Bean
-  public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+  public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Properties jpaProperties) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
     emf.setPackagesToScan("com.kb.wallet.member.domain", "com.kb.wallet.ticket.domain",
-      "com.kb.wallet.seat.domain",
-      "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
+      "com.kb.wallet.seat.domain", "com.kb.wallet.musical.domain", "com.kb.wallet.account.domain");
     emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
     // JPA Properties 설정
-    Properties jpaProperties = new Properties();
-    //TODO: profile에 따라 분리해야 할 듯
-    jpaProperties.put("hibernate.hbm2ddl.auto", "create"); // 테이블 자동 생성
-    jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect"); // 방언 처리
-    jpaProperties.put("hibernate.show_sql", "true"); // SQL 쿼리 로그 출력1
-    //TODO: 이거 설정하면 로그에 쿼리 여러 번 나오는 거 같음
-//    jpaProperties.put("hibernate.format_sql", "true"); // SQL 쿼리 포매팅 출력
-    jpaProperties.put("hibernate.physical_naming_strategy",
-      "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
-
     emf.setJpaProperties(jpaProperties);
-
     return emf;
   }
 
