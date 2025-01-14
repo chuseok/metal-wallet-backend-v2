@@ -57,7 +57,7 @@ public class Ticket {
   private TicketStatus ticketStatus;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "seat_id", unique = true)
+  @JoinColumn(name = "seat_id")
   private Seat seat;
 
   @Column(updatable = false)
