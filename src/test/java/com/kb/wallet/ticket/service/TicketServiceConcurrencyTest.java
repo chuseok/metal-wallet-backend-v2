@@ -20,15 +20,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-  AppConfig.class
+    AppConfig.class
 })
 @WebAppConfiguration
+@ActiveProfiles("test")
 class TicketServiceConcurrencyTest {
 
   @Autowired
@@ -40,15 +42,12 @@ class TicketServiceConcurrencyTest {
   @BeforeEach
   public void setUp() {
     // member 데이터 삽입
-    jdbcTemplate.execute(
-      "insert into member (id, email, is_activated, name, password, phone, pin_number, role) values "
-        +
-        "(1, 'test1@gmail.com', true, 'test1', 'password1', '01011111111', '111111', 'USER')");
-
-    jdbcTemplate.execute(
-      "insert into member (id, email, is_activated, name, password, phone, pin_number, role) values "
-        +
-        "(2, 'test2@gmail.com', true, 'test2', 'password2', '01022222222', '222222', 'USER')");
+    for(int i=1; i<=10; i++) {
+      jdbcTemplate.execute(
+          "insert into member (id, email, is_activated, name, password, phone, pin_number, role) values (" +
+              i + ", 'test" + i + "@gmail.com', true, 'test" + i + "', 'password" + i + "', '0100000000" + i + "', '" +
+              String.format("%06d", i) + "', 'USER')");
+    }
 
     // musical 데이터 삽입
     jdbcTemplate.execute(
@@ -146,48 +145,33 @@ class TicketServiceConcurrencyTest {
   }
 
   @Test
-  @DisplayName("2명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예매만 성공한다.")
+  @DisplayName("10명의 사용자가 동시에 티켓을 예매할 경우, 단 1건의 예매만 성공한다.")
   void testBookTicket_multipleUsersSingleSeatSuccess2() throws InterruptedException {
 
-    int threadCount = 2;
+    int threadCount = 10;
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     CountDownLatch latch = new CountDownLatch(threadCount);
     List<Exception> exceptions = new ArrayList<>();
 
-    // 첫 번째 사용자
-    String email1 = "test1@gmail.com";
-    TicketRequest request1 = new TicketRequest();
-    request1.setDeviceId("deviceID1");
-    request1.setSeatId(List.of(1L));
+    for(int i=1; i<=10; i++) {
+      String email = "test" + i + "@gmail.com";
+      TicketRequest request = new TicketRequest();
+      request.setDeviceId("diviceID" + i);
+      request.setSeatId(Collections.singletonList(1L));
 
-    // 두 번째 사용자
-    String email2 = "test2@gmail.com";
-    TicketRequest request2 = new TicketRequest();
-    request1.setDeviceId("deviceID2");
-    request1.setSeatId(List.of(1L));
-
-    // 두 명의 사용자 각각을 별도의 스레드로 실행
-    executor.submit(() -> {
-      try {
-        latch.countDown();
-        latch.await();
-        ticketService.bookTicket(email1, request1);
-      } catch (Exception e) {
-        System.out.println("Exception occurred for " + email1 + ": " + e.getMessage());
-        exceptions.add(e);
-      }
-    });
-
-    executor.submit(() -> {
-      try {
-        latch.countDown();
-        latch.await();
-        ticketService.bookTicket(email2, request2);
-      } catch (Exception e) {
-        System.out.println("Exception occurred for " + email2 + ": " + e.getMessage());
-        exceptions.add(e);
-      }
-    });
+      executor.submit(() -> {
+        try {
+          latch.countDown();
+          latch.await();
+          Thread.sleep(50);
+          ticketService.bookTicket(email, request);
+        } catch (Exception e) {
+          String errorMessage = "Exception occurred for " + email + ": " + e.getMessage();
+          System.out.println(errorMessage);
+          exceptions.add(e);
+        }
+      });
+    }
 
     executor.shutdown();
     executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -195,6 +179,7 @@ class TicketServiceConcurrencyTest {
     // Check the number of tickets created in the ticket table
     String sql = "select count(*) from ticket";
     Integer ticketCount = jdbcTemplate.queryForObject(sql, Integer.class);
+    System.out.println("현재 생성된 행의 개수: " + ticketCount);
     assertEquals(1, ticketCount.intValue());
 
     // 예외 처리 내용을 확인하거나 로깅
