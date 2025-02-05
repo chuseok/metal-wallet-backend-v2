@@ -39,10 +39,10 @@ public class Member implements UserDetails {
   @Column(nullable = false)
   private String password;
 
-  @Column(nullable = false, length = 10)
+  @Column(nullable = false, length = 12)
   private String name;
 
-  @Column(unique = true, length = 12)
+  @Column(unique = true, length = 14)
   private String phone;
 
   @Column(nullable = false)
