@@ -78,11 +78,7 @@ class TicketServiceConcurrencyTest {
 
   @BeforeEach
   void setUpBeforeEach() {
-    ticketRepository.deleteAll();
-    seatRepository.deleteAll();
-    sectionRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    musicalRepository.deleteAll();
+    cleanUpAll();
     musical = musicalRepository.save(new Musical(
         1L,
         "킹키부츠",
@@ -120,17 +116,24 @@ class TicketServiceConcurrencyTest {
 
   @BeforeAll
   void setUp() {
-    insertTestData();
+    insertMemberData();
   }
 
   @AfterEach
   void tearDown() {
     ticketRepository.deleteAll();
-//    cleanUpAll();
+  }
+
+  void cleanUpAll() {
+    ticketRepository.deleteAll();
+    seatRepository.deleteAll();
+    sectionRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    musicalRepository.deleteAll();
   }
 
   @Transactional
-  void insertTestData() {
+  void insertMemberData() {
     for (int i = 1; i <= testMemberCnt; i++) {
       memberRepository.save(new Member(
           "test" + i + "@gmail.com",
