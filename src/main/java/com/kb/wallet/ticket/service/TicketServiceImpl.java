@@ -7,6 +7,7 @@ import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
 import com.kb.wallet.seat.domain.Seat;
+import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.seat.service.SeatService;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
@@ -28,6 +29,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -38,24 +41,27 @@ public class TicketServiceImpl implements TicketService {
   private final TicketRepository ticketRepository;
   private final MemberService memberService;
   private final SeatService seatService;
+  private final SeatRepository seatRepository;
   private final RSAService rsaService;
 
   @Override
   public Ticket getTicket(Long id) {
     return ticketRepository.findById(id)
-      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
   }
 
   @Override
   public List<TicketListResponse> getTickets(String email, TicketStatus ticketStatus,
-    int page, int size, Long cursor) {
+      int page, int size, Long cursor) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     return ticketRepository.findAllByMemberAndTicketStatus(email, ticketStatus, cursor,
-      pageable);
+        pageable);
   }
 
   @Override
-  @Transactional(transactionManager = "jpaTransactionManager", rollbackFor = CustomException.class)
+  @Transactional(transactionManager = "jpaTransactionManager",
+      rollbackFor = CustomException.class
+  )
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
     Member member = memberService.getMemberByEmail(email);
 
@@ -68,27 +74,31 @@ public class TicketServiceImpl implements TicketService {
     return responses;
   }
 
-  private Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
+  @Transactional(transactionManager = "jpaTransactionManager",
+      rollbackFor = CustomException.class
+  )
+  Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
     Seat seat = seatService.getSeatById(seatId);
+
     seat.checkSeatAvailability();
 
     Ticket ticket = saveTicket(member, seat, deviceId);
 
     seat.updateSeatAvailability();
-    seat.getSection();
+    seatRepository.save(seat);
     return ticket;
   }
 
   private Ticket saveTicket(Member member, Seat seat, String deviceId) {
     Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
-      deviceId);
-    
+        deviceId);
+
     return ticketRepository.save(ticket);
   }
 
   @Override
   public ProposedEncryptResponse provideEncryptElement(Long ticketId, String email,
-    EncryptRequest encryptRequest) {
+      EncryptRequest encryptRequest) {
     encryptRequest.validateDeviceId();
 
     Ticket ticket = getTicket(ticketId);
@@ -116,7 +126,7 @@ public class TicketServiceImpl implements TicketService {
   @Transactional(transactionManager = "jpaTransactionManager")
   public void cancelTicket(String email, Long ticketId) {
     Ticket ticket = ticketRepository.findByTicketIdAndEmail(ticketId, email)
-      .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
+        .orElseThrow(() -> new CustomException(TICKET_NOT_FOUND_ERROR));
     ticket.isCancellable();
     updateTicketStatus(ticket, TicketStatus.CANCELED);
   }

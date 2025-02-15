@@ -1,5 +1,6 @@
 package com.kb.wallet.global.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
+@Slf4j
 public class JpaConfig {
 
   @Configuration
@@ -32,10 +34,11 @@ public class JpaConfig {
     public Properties jpaProperties() {
       Properties properties = new Properties();
       properties.put("hibernate.hbm2ddl.auto", "update");
-      properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
+      properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
       properties.put("hibernate.show_sql", "true");
       properties.put("hibernate.physical_naming_strategy",
           "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+      log.info("db1: {}", properties.get("hibernate.hbm2ddl.auto"));
       return properties;
     }
   }
@@ -62,6 +65,7 @@ public class JpaConfig {
       properties.put("hibernate.show_sql", "false");
       properties.put("hibernate.physical_naming_strategy",
           "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+      log.info("db2: {}", properties.get("hibernate.hbm2ddl.auto"));
       return properties;
     }
   }
@@ -82,11 +86,13 @@ public class JpaConfig {
     @Bean
     public Properties jpaProperties() {
       Properties properties = new Properties();
-      properties.put("hibernate.hbm2ddl.auto", "update");
-      properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
+      properties.put("hibernate.hbm2ddl.auto", "create");
+      properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
       properties.put("hibernate.show_sql", "true");
       properties.put("hibernate.physical_naming_strategy",
           "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+      log.info("db3 datasourceUrl: {}", datasourceUrl);
+      log.info("db3: {}", properties.get("hibernate.hbm2ddl.auto"));
       return properties;
     }
   }
