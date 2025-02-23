@@ -24,15 +24,6 @@ public class DataSourceConfig {
    * TestConfig의 dataSource() 메서드가 DataSource 빈으로 등록된다.
    */
 
-  @Value("${spring.datasource.url}")
-  private String dbUrl;
-
-  @Value("${spring.datasource.username}")
-  private String dbUsername;
-
-  @Value("${spring.datasource.password}")
-  private String dbPassword;
-
   @Value("${spring.datasource.hikari.minimum-idle}")
   private int minimumIdle;
 
