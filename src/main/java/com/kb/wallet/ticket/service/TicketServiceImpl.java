@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -43,6 +44,7 @@ public class TicketServiceImpl implements TicketService {
   private final SeatService seatService;
   private final SeatRepository seatRepository;
   private final RSAService rsaService;
+  private final EntityManager entityManager;
 
   @Override
   public Ticket getTicket(Long id) {
@@ -58,10 +60,8 @@ public class TicketServiceImpl implements TicketService {
         pageable);
   }
 
+  @Transactional(rollbackFor = CustomException.class)
   @Override
-  @Transactional(transactionManager = "jpaTransactionManager",
-      rollbackFor = CustomException.class
-  )
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
     Member member = memberService.getMemberByEmail(email);
 
@@ -74,24 +74,15 @@ public class TicketServiceImpl implements TicketService {
     return responses;
   }
 
-  @Transactional(transactionManager = "jpaTransactionManager",
-      rollbackFor = CustomException.class
-  )
   Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
-    Seat seat = seatService.getSeatById(seatId);
-
+    Seat seat = seatService.getSeatByIdWithLock(seatId);
     seat.checkSeatAvailability();
 
-    Ticket ticket = saveTicket(member, seat, deviceId);
-
-    seat.updateSeatAvailability();
-    seatRepository.save(seat);
-    return ticket;
-  }
-
-  private Ticket saveTicket(Member member, Seat seat, String deviceId) {
     Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
         deviceId);
+
+    seat.updateSeatAvailability();
+    entityManager.flush();
 
     return ticketRepository.save(ticket);
   }

@@ -3,7 +3,6 @@ package com.kb.wallet.ticket.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.kb.wallet.global.config.AppConfig;
-import com.kb.wallet.member.constant.RoleType;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -15,7 +14,6 @@ import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.seat.repository.SectionRepository;
 import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
-import com.kb.wallet.ticket.dto.response.TicketResponse;
 import com.kb.wallet.ticket.repository.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -27,7 +25,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import javax.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -72,8 +69,8 @@ class TicketServiceConcurrencyTest {
 
   private Long testSeatId;
   private Long testSectionId;
-  private int testMemberCnt = 100;
-  private int testAvailableSeats = 100;
+  private final int testMemberCnt = 100;
+  private final int testAvailableSeats = 100;
 
   Section section;
   Schedule schedule;
@@ -81,11 +78,7 @@ class TicketServiceConcurrencyTest {
 
   @BeforeEach
   void setUpBeforeEach() {
-    ticketRepository.deleteAll();
-    seatRepository.deleteAll();
-    sectionRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    musicalRepository.deleteAll();
+    cleanUpAll();
     musical = musicalRepository.save(new Musical(
         1L,
         "킹키부츠",
@@ -123,17 +116,24 @@ class TicketServiceConcurrencyTest {
 
   @BeforeAll
   void setUp() {
-    insertTestData();
+    insertMemberData();
   }
 
   @AfterEach
   void tearDown() {
     ticketRepository.deleteAll();
-//    cleanUpAll();
+  }
+
+  void cleanUpAll() {
+    ticketRepository.deleteAll();
+    seatRepository.deleteAll();
+    sectionRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    musicalRepository.deleteAll();
   }
 
   @Transactional
-  void insertTestData() {
+  void insertMemberData() {
     for (int i = 1; i <= testMemberCnt; i++) {
       memberRepository.save(new Member(
           "test" + i + "@gmail.com",
@@ -156,7 +156,6 @@ class TicketServiceConcurrencyTest {
         schedule,
         true
     ));
-
     testSeatId = seat1.getId();
 
     int threadCount = testMemberCnt;

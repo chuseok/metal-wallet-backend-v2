@@ -18,4 +18,10 @@ public class SeatServiceImpl implements SeatService {
     return seatRepository.findByIdWithLock(seatId)
         .orElseThrow(() -> new CustomException(ErrorCode.SEAT_NOT_FOUND_ERROR));
   }
+
+  @Override
+  public Seat getSeatByIdWithLock(Long seatId) {
+    return seatRepository.findByIdWithLock(seatId)
+        .orElseThrow(() -> new CustomException(ErrorCode.SEAT_NOT_FOUND_ERROR));
+  }
 }
