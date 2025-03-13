@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.ClassPathResource;
@@ -62,6 +64,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaAuditing
 @EnableTransactionManagement
 @RequiredArgsConstructor
+@EnableAspectJAutoProxy
 public class AppConfig {
 
   private final DataSource dataSource;
@@ -78,6 +81,7 @@ public class AppConfig {
 
   // JPA 설정
   @Bean
+  @Primary
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Properties jpaProperties) {
     LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
     emf.setDataSource(dataSource);
@@ -91,6 +95,7 @@ public class AppConfig {
   }
 
   @Bean
+  @Primary
   public PlatformTransactionManager jpaTransactionManager(
     LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
