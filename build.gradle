@@ -117,6 +117,9 @@ dependencies {
     implementation 'org.redisson:redisson:3.16.6'
     implementation 'org.redisson:redisson-spring-data-26:3.16.6'
     implementation "org.springframework:spring-tx:${springVersion}"
+
+    // Spring AOP
+    implementation 'org.springframework:spring-aop:5.3.30'
 }
 
 test {
