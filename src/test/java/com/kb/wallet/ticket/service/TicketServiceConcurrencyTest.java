@@ -46,7 +46,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ContextConfiguration(classes = AppConfig.class)
 @WebAppConfiguration
 @ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS) //의존성 주입된 인스턴스 변수를 static없이 사용 가능
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TicketServiceConcurrencyTest {
 
   @Autowired
@@ -186,7 +186,7 @@ class TicketServiceConcurrencyTest {
 
     latch.await();
     executor.shutdown();
-
+    
     int successCount = 0;
     for(Future<BookResult> future: results) {
       try {
