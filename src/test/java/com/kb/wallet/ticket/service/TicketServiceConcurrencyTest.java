@@ -135,11 +135,12 @@ class TicketServiceConcurrencyTest {
   @Transactional
   void insertMemberData() {
     for (int i = 1; i <= testMemberCnt; i++) {
+      String phoneNumber = String.format("010%08d", i);
       memberRepository.save(new Member(
           "test" + i + "@gmail.com",
-          "password" + i,
           "test" + i,
-          "0100000000" + i,
+          phoneNumber,
+          "password" + i,
           String.format("%06d", i)
       ));
     }
