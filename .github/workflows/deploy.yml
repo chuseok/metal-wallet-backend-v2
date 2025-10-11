@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Hello World 찍기
-        run: echo "Hello World" # 테스트 실행
+        run: echo "Hello World" # 테스트 실행2
