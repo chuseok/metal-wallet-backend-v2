@@ -57,5 +57,6 @@ jobs:
             # Docker Hub에서 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.ref_name }}
       
+      
             # 컨테이너 실행 (docker-compose)
             docker-compose --env-file .env.${{ github.ref_name }} up -d
