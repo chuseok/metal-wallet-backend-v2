@@ -36,7 +36,7 @@ jobs:
       - name: Build Docker image
         run: |
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_TAG .
+          docker build -t $IMAGE_TAG .
 
       - name: Push Docker image
         run: |
