@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app-test:
+    container_name: myapp-${SPRING_PROFILE}
+    env_file:
+      - .env.${SPRING_PROFILE}
+    image: chuseok/metalwallet-backend:${SPRING_PROFILE}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WAR_FILE: build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}  # dev/test/prod
+      JWT_SECRET: ${JWT_SECRET}
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      FRONTEND_URL: ${FRONTEND_URL}
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
