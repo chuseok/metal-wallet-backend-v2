@@ -59,5 +59,6 @@ jobs:
             # Docker Hub에서 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:$SPRING_PROFILE
       
+      
             # 컨테이너 실행 (docker-compose)
             docker compose --env-file .env.$SPRING_PROFILE up -d
