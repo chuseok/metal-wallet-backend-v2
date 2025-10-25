@@ -51,8 +51,8 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             # 기존 컨테이너 중지 및 삭제
-            docker stop metal-wallet-backend || true
-            docker rm metal-wallet-backend || true
+            docker stop metalwallet-backend || true
+            docker rm metalwallet-backend || true
             
             # Docker Hub에서 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.ref_name }}
