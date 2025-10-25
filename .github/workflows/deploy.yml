@@ -61,4 +61,4 @@ jobs:
       
       
             # 컨테이너 실행 (docker-compose)
-            docker-compose --env-file .env.${{ github.ref_name }} up -d
+            docker compose --env-file .env.$SPRING_PROFILE up -d
