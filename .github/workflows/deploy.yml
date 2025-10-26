@@ -92,7 +92,24 @@ jobs:
             
             # Docker Hub에서 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:$SPRING_PROFILE
-      
-      
+
+            APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
+            
+            echo "📦 Deploying ${SPRING_PROFILE} environment..."
+            
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+            
+            cat > .env.${SPRING_PROFILE} <<EOF
+            ENV=${SPRING_PROFILE}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            DB_URL=jdbc:log4jdbc:mysql://${{ secrets.DB_URL }}:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASS=${{ secrets.DB_PASS }}
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            EOF
+            
+            echo "✅ .env.${SPRING_PROFILE} file created!"
+
             # 컨테이너 실행 (docker-compose)
             docker compose --env-file .env.$SPRING_PROFILE up -d
