@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   app-test:
-    container_name: myapp-${SPRING_PROFILE}
+    container_name: myapp-${ENV}
     env_file:
-      - .env.${SPRING_PROFILE}
-    image: chuseok/metalwallet-backend:${SPRING_PROFILE}
+      - .env.${ENV}
+    image: chuseok/metalwallet-backend:${ENV}
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,7 +14,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}  # dev/test/prod
+      SPRING_PROFILES_ACTIVE: ${ENV}  # dev/test/prod
       JWT_SECRET: ${JWT_SECRET}
       DB_URL: ${DB_URL}
       DB_USER: ${DB_USER}
