@@ -24,17 +24,19 @@ jobs:
       - name: Set PROFILE based on branch
         run: |
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-          echo "PROFILE=prod" >> $GITHUB_ENV
+            echo "PROFILE=prod" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF_NAME}" == "develop" ]]; then
-          echo "PROFILE=dev" >> $GITHUB_ENV
+            echo "PROFILE=dev" >> $GITHUB_ENV
           else
-          echo "PROFILE=test" >> $GITHUB_ENV
+            echo "PROFILE=test" >> $GITHUB_ENV
+          fi
 
       - name: Make application-${{ env.PROFILE }}.properties
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
-          SECRET_NAME="APPLICATION_PROPERTIES_${{ env.PROFILE | upper }}"
+          SECRET_NAME="APPLICATION_PROPERTIES_${{ env.PROFILE }}"
+          SECRET_NAME="${SECRET_NAME^^}"
           echo "${{ secrets[SECRET_NAME] }}" > application-${{ env.PROFILE }}.properties
         shell: bash
       - name: Grant execute permission to gradlew
