@@ -53,12 +53,11 @@ jobs:
           target: "/home/ubuntu/metal-wallet-backend-v2/"
 
       - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v0.1.5
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          options: "-o StrictHostKeyChecking=no"
           script: |
             SPRING_PROFILE=${{ github.ref_name }}
             APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
