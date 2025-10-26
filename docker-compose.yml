@@ -13,13 +13,6 @@ services:
         WAR_FILE: build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
     ports:
       - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${ENV}  # dev/test/prod
-      JWT_SECRET: ${JWT_SECRET}
-      DB_URL: ${DB_URL}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       - redis
 
