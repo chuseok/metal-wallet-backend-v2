@@ -33,13 +33,18 @@ jobs:
         shell: bash
 
       - name: Make application-${{ env.PROFILE }}.properties
+        shell: bash
         run: |
           mkdir -p ./src/main/resources
           cd ./src/main/resources
-          SECRET_NAME="APPLICATION_PROPERTIES_${{ env.PROFILE }}"
-          SECRET_NAME="${SECRET_NAME^^}"
-          echo "${{ secrets[SECRET_NAME] }}" > application-${{ env.PROFILE }}.properties
-        shell: bash
+
+          if [[ "$PROFILE" == "prod" ]]; then
+            echo "${{ secrets.APPLICATION_PROPERTIES_PROD }}" > application-prod.properties
+          elif [[ "$PROFILE" == "dev" ]]; then
+            echo "${{ secrets.APPLICATION_PROPERTIES_DEV }}" > application-dev.properties
+          else
+            echo "${{ secrets.APPLICATION_PROPERTIES_TEST }}" > application-test.properties
+          fi
 
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
