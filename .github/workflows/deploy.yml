@@ -21,13 +21,22 @@ jobs:
           distribution: corretto
           java-version: '17'
 
-      - name: Create application-${{ env.PROFILE }}.properties
+      - name: Set PROFILE based on branch
         run: |
-          mkdir -p src/main/resources
-          cd src/main/resources
-          SECRET_NAME="APPLICATION_PROPERTIES_${{ env.PROFILE | upper }}"
-          echo "${{ secrets[SECRET_NAME] }}" > ./application-${{ env.PROFILE }}.properties
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+          echo "PROFILE=prod" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "develop" ]]; then
+          echo "PROFILE=dev" >> $GITHUB_ENV
+          else
+          echo "PROFILE=test" >> $GITHUB_ENV
 
+      - name: Make application-${{ env.PROFILE }}.properties
+        run: |
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
+          SECRET_NAME="APPLICATION_PROPERTIES_${{ env.PROFILE | upper }}"
+          echo "${{ secrets[SECRET_NAME] }}" > application-${{ env.PROFILE }}.properties
+        shell: bash
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
