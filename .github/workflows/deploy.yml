@@ -103,6 +103,9 @@ jobs:
             
             mkdir -p $APP_DIR
             cd $APP_DIR
+            echo "🔍 Checking APP_DIR path..."
+            pwd
+            ls -l
             
             cat > .env.${SPRING_PROFILE} <<EOF
             ENV=${SPRING_PROFILE}
@@ -112,8 +115,9 @@ jobs:
             DB_PASS=${{ secrets.DB_PASS }}
             FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             EOF
-            
-            echo "✅ .env.${SPRING_PROFILE} file created!"
+  
+            export ENV=$SPRING_PROFILE
+            echo "✅ .env.${SPRING_PROFILE} file created and ENV exported!"
             
             export $(grep JAVA_OPTS .env.$SPRING_PROFILE | xargs)
             echo "✅ JAVA_OPTS = $JAVA_OPTS"
