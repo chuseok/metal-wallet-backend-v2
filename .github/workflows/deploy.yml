@@ -32,6 +32,7 @@ jobs:
           fi
         shell: bash
 
+
       - name: Make application-${{ env.PROFILE }}.properties
         shell: bash
         run: |
