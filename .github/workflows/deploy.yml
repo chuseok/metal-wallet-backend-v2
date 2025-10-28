@@ -84,8 +84,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            SPRING_PROFILE="${GITHUB_REF##*/}"
-            echo "SPRING_PROFILE=$SPRING_PROFILE"
+            SPRING_PROFILE=${{ github.ref_name }}
             
             # 기존 컨테이너 중지 및 삭제
             docker stop myapp-$SPRING_PROFILE || true
@@ -95,8 +94,9 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:$SPRING_PROFILE
 
             APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
-  
-            echo "📦 Deploying $SPRING_PROFILE environment..."
+            
+            echo "📦 Deploying ${SPRING_PROFILE} environment..."
+            
             mkdir -p $APP_DIR
             cd $APP_DIR
             
@@ -109,9 +109,10 @@ jobs:
             FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             EOF
             
-            echo "✅ .env.$SPRING_PROFILE file created!"
+            echo "✅ .env.${SPRING_PROFILE} file created!"
+            
+            export $(grep JAVA_OPTS .env.$SPRING_PROFILE | xargs)
+            echo "✅ JAVA_OPTS = $JAVA_OPTS"
 
             # 컨테이너 실행 (docker-compose)
             docker compose --env-file .env.$SPRING_PROFILE up -d
-            
-            echo "✅ JAVA_OPTS = .env.${JAVA_OPTS}"
