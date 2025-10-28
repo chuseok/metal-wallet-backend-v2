@@ -35,13 +35,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     "com.kb.wallet"
 })
 @MapperScan(
-
     basePackages = {
         "com.kb.wallet.member.repository",
         "com.kb.wallet.ticket.repository",
         "com.kb.wallet.seat.repository",
         "com.kb.wallet.musical.repository"
-
     },
     annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
 )
