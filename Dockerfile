@@ -12,4 +12,4 @@ COPY ${WAR_FILE} /usr/local/tomcat/webapps/ROOT.war
 EXPOSE 8080
 
 # Start Tomcat
-CMD ["sh", "-c", "catalina.sh run $JAVA_OPTS"]
+CMD ["sh", "-c", "catalina.sh run"]
