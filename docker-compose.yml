@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   app-test:
-    container_name: myapp-${ENV}
+    container_name: myapp-test
     environment:
-      - JAVA_OPTS=-Dspring.profiles.active=${ENV} -Dprofile=${ENV}
+      - JAVA_OPTS=-Dspring.profiles.active=test -Dprofile=test
     env_file:
-      - .env.${ENV}
-    image: chuseok/metalwallet-backend:${ENV}
+      - .env.test
+    image: chuseok/metalwallet-backend:test
     build:
       context: .
       dockerfile: Dockerfile

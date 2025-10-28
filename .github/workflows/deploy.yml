@@ -109,6 +109,7 @@ jobs:
             
             cat > .env.${SPRING_PROFILE} <<EOF
             ENV=${SPRING_PROFILE}
+            JAVA_OPTS=-Dspring.profiles.active=${SPRING_PROFILE} -Dprofile=${SPRING_PROFILE}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             DB_URL=jdbc:log4jdbc:mysql://${{ secrets.DB_URL }}:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true
             DB_USER=${{ secrets.DB_USER }}
@@ -116,10 +117,7 @@ jobs:
             FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             EOF
   
-            export ENV=$SPRING_PROFILE
             echo "✅ .env.${SPRING_PROFILE} file created and ENV exported!"
-            
-            export $(grep JAVA_OPTS .env.$SPRING_PROFILE | xargs)
             echo "✅ JAVA_OPTS = $JAVA_OPTS"
 
             # 컨테이너 실행 (docker-compose)
