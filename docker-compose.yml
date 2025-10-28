@@ -3,6 +3,8 @@ version: '3.8'
 services:
   app-test:
     container_name: myapp-${ENV}
+    environment:
+      - profile=${ENV}
     env_file:
       - .env.${ENV}
     image: chuseok/metalwallet-backend:${ENV}
