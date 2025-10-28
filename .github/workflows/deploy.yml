@@ -40,10 +40,13 @@ jobs:
 
           if [[ "$PROFILE" == "prod" ]]; then
             echo "${{ secrets.APPLICATION_PROPERTIES_PROD }}" > application-prod.properties
+            echo "✅ wrote application-prod.properties"
           elif [[ "$PROFILE" == "dev" ]]; then
             echo "${{ secrets.APPLICATION_PROPERTIES_DEV }}" > application-dev.properties
+            echo "✅ wrote application-dev.properties"
           else
             echo "${{ secrets.APPLICATION_PROPERTIES_TEST }}" > application-test.properties
+            echo "✅ wrote application-test.properties"
           fi
 
       - name: Grant execute permission to gradlew
