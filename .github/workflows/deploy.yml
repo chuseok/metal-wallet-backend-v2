@@ -46,7 +46,7 @@ jobs:
             echo "${{ secrets.APPLICATION_PROPERTIES_DEV }}" > application-dev.properties
             echo "✅ wrote application-dev.properties"
           else
-            echo "${{ secrets.APPLICATION_PROPERTIES_TEST }}" > application-test.properties
+            echo "${{ secrets.APPLICATION_PROPERTIES }}" > application-test.properties
             echo "✅ wrote application-test.properties"
           fi
 
