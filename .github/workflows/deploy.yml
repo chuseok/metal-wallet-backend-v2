@@ -97,15 +97,5 @@ jobs:
             # Docker Hub에서 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:$SPRING_PROFILE
 
-            APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
-            
-            echo "📦 Deploying ${SPRING_PROFILE} environment..."
-            
-            mkdir -p $APP_DIR
-            cd $APP_DIR
-            echo "🔍 Checking APP_DIR path..."
-            pwd
-            ls -l
-
             # 컨테이너 실행 (docker-compose)
             docker compose up -d
