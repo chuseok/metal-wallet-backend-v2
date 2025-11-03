@@ -106,20 +106,6 @@ jobs:
             echo "🔍 Checking APP_DIR path..."
             pwd
             ls -l
-            
-            cat > .env.${SPRING_PROFILE} <<EOF
-            ENV=${SPRING_PROFILE}
-            JAVA_OPTS=-Dspring.profiles.active=${SPRING_PROFILE} -Dprofile=${SPRING_PROFILE}
-            CATALINA_OPTS=-Dprofile=${SPRING_PROFILE}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            DB_URL=jdbc:log4jdbc:mysql://${{ secrets.DB_URL }}:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASS=${{ secrets.DB_PASS }}
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            EOF
-  
-            echo "✅ .env.${SPRING_PROFILE} file created and ENV exported!"
-            echo "✅ JAVA_OPTS = $JAVA_OPTS"
 
             # 컨테이너 실행 (docker-compose)
-            docker compose --env-file .env.$SPRING_PROFILE up -d
+            docker compose up -d
