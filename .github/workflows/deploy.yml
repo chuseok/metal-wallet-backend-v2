@@ -78,7 +78,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "docker-compose.yml"
+          source: "docker-compose.${{ env.PROFILE }}.yml"
           target: "/home/ubuntu/metal-wallet-backend-v2/"
 
       - name: Deploy to EC2 via SSH
@@ -88,7 +88,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            SPRING_PROFILE=${{ github.ref_name }}
+            SPRING_PROFILE=${{ env.PROFILE }}
             
             # 기존 컨테이너 중지 및 삭제
             docker stop myapp-$SPRING_PROFILE || true
@@ -108,4 +108,4 @@ jobs:
             ls -l
 
             # 컨테이너 실행 (docker-compose)
-            docker compose up -d
+            docker compose -f docker-compose.$SPRING_PROFILE.yml up -d
