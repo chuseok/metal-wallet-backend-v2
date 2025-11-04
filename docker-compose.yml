@@ -2,10 +2,12 @@ version: '3.8'
 
 services:
   app:
-    container_name: myapp-${ENV}
+    container_name: myapp-${PROFILE}
+    image: chuseok/metalwallet-backend:${PROFILE}
     env_file:
-      - .env.${ENV}
-    image: chuseok/metalwallet-backend:${ENV}
+      - .env
+#    volumes:
+#      - ./pinpoint-agent:/pinpoint-agent
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,17 +15,28 @@ services:
         WAR_FILE: build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
     ports:
       - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${ENV}  # dev/test/prod
-      JWT_SECRET: ${JWT_SECRET}
-      DB_URL: ${DB_URL}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       - redis
+    environment:
+      - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
+#      - JAVA_OPTS=-javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.3.jar \
+#        -Dpinpoint.agentId=metal-wallet-01 \
+#        -Dpinpoint.applicationName=metal-wallet \
+#        -Dprofiler.transport.grpc.collector.ip=pinpoint-collector \
+#        -Dprofiler.transport.grpc.collector.port=9991
+#        -Dspring.profiles.active=${PROFILE} \
+#        -Dprofile=${PROFILE}
+#    networks:
+#      - monitor-net
 
   redis:
     image: redis:7
     ports:
       - "6379:6379"
+#    networks:
+#      - monitor-net
+
+
+#networks:
+#  monitor-net:
+#    external: true

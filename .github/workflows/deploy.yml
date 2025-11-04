@@ -21,6 +21,35 @@ jobs:
           distribution: corretto
           java-version: '17'
 
+      - name: Set PROFILE based on branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "PROFILE=prod" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "develop" ]]; then
+            echo "PROFILE=dev" >> $GITHUB_ENV
+          else
+            echo "PROFILE=test" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+
+      - name: Make application-${{ env.PROFILE }}.properties
+        shell: bash
+        run: |
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
+
+          if [[ "$PROFILE" == "prod" ]]; then
+            echo "${{ secrets.APPLICATION_PROPERTIES_PROD }}" > application-prod.properties
+            echo "✅ wrote application-prod.properties"
+          elif [[ "$PROFILE" == "dev" ]]; then
+            echo "${{ secrets.APPLICATION_PROPERTIES_DEV }}" > application-dev.properties
+            echo "✅ wrote application-dev.properties"
+          else
+            echo "${{ secrets.APPLICATION_PROPERTIES }}" > application-test.properties
+            echo "✅ wrote application-test.properties"
+          fi
+
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
@@ -53,39 +82,36 @@ jobs:
           target: "/home/ubuntu/metal-wallet-backend-v2/"
 
       - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v0.1.5
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          options: "-o StrictHostKeyChecking=no"
           script: |
-            SPRING_PROFILE=${{ github.ref_name }}
-            APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
-      
-            echo "📦 Deploying ${SPRING_PROFILE} environment..."
+            SPRING_PROFILE=${{ env.PROFILE }}
             
-            mkdir -p $APP_DIR
-            cd $APP_DIR
-            
-            cat > .env.${SPRING_PROFILE} <<EOF
-            ENV=${SPRING_PROFILE}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            DB_URL=jdbc:log4jdbc:mysql://${{ secrets.DB_HOST }}:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASS=${{ secrets.DB_PASS }}
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            EOF
-      
-            echo "✅ .env.${SPRING_PROFILE} file created!"
-      
             # 기존 컨테이너 중지 및 삭제
             docker stop myapp-$SPRING_PROFILE || true
             docker rm myapp-$SPRING_PROFILE || true
             
             # Docker Hub에서 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:$SPRING_PROFILE
-      
-      
+
+            APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
+            
+            echo "📦 Deploying ${SPRING_PROFILE} environment..."
+            
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+            echo "🔍 Checking APP_DIR path..."
+            pwd
+            ls -l
+
+            cat > .env <<EOF
+            PROFILE=${SPRING_PROFILE}
+            EOF
+            
+            echo "✅ .env.${SPRING_PROFILE} file created!"
+
             # 컨테이너 실행 (docker-compose)
-            docker compose --env-file .env.$SPRING_PROFILE up -d
+            docker compose --env-file .env up -d
