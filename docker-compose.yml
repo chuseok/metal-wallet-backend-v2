@@ -8,11 +8,11 @@ services:
       - .env
 #    volumes:
 #      - ./pinpoint-agent:/pinpoint-agent
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        WAR_FILE: build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#      args:
+#        WAR_FILE: build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
     ports:
       - "8080:8080"
     depends_on:
