@@ -4,6 +4,7 @@ import static com.kb.wallet.global.common.status.ErrorCode.TICKET_NOT_FOUND_ERRO
 
 import com.kb.wallet.global.common.status.ErrorCode;
 import com.kb.wallet.global.exception.CustomException;
+import com.kb.wallet.lock.DistributedLock;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
 import com.kb.wallet.seat.domain.Seat;
@@ -60,6 +61,7 @@ public class TicketServiceImpl implements TicketService {
         pageable);
   }
 
+  @DistributedLock(key = "#seatId")
   @Transactional(rollbackFor = CustomException.class)
   @Override
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {

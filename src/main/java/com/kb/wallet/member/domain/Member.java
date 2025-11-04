@@ -39,7 +39,7 @@ public class Member implements UserDetails {
   @Column(nullable = false)
   private String password;
 
-  @Column(nullable = false, length = 12)
+  @Column(nullable = false, length = 15)
   private String name;
 
   @Column(unique = true, length = 14)

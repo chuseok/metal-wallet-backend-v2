@@ -3,50 +3,115 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - deploy/ljr
+      - main
+      - develop
+      - test
 
 jobs:
-  deploy:
+  My-Deploy-Job:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || 'test' }}
     steps:
-      - name: Github repository에서 파일 가져오기
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: JDK 17버전 설치
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: corretto
+          java-version: '17'
 
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: Set PROFILE based on branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "PROFILE=prod" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "develop" ]]; then
+            echo "PROFILE=dev" >> $GITHUB_ENV
+          else
+            echo "PROFILE=test" >> $GITHUB_ENV
+          fi
+        shell: bash
 
-      - name: WAR 파일 이름을 metal-wallet-server.war로 변경
-        run: mv build/libs/*.war build/libs/metal-wallet-server.war
 
-      - name: WAR 파일이 존재하는지 확인
-        run: ls build/libs/metal-wallet-server.war
+      - name: Make application-${{ env.PROFILE }}.properties
+        shell: bash
+        run: |
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
 
-      - name: SCP로 EC2에 빌드된 파일 전송
-        uses: appleboy/scp-action@v0.1.7
+          if [[ "$PROFILE" == "prod" ]]; then
+            echo "${{ secrets.APPLICATION_PROPERTIES_PROD }}" > application-prod.properties
+            echo "✅ wrote application-prod.properties"
+          elif [[ "$PROFILE" == "dev" ]]; then
+            echo "${{ secrets.APPLICATION_PROPERTIES_DEV }}" > application-dev.properties
+            echo "✅ wrote application-dev.properties"
+          else
+            echo "${{ secrets.APPLICATION_PROPERTIES }}" > application-test.properties
+            echo "✅ wrote application-test.properties"
+          fi
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      - name: Build WAR
+        run: ./gradlew clean build -x test
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
+          docker build -t $IMAGE_TAG .
+
+      - name: Push Docker image
+        run: |
+          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
+          docker push $IMAGE_TAG
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.2
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: build/libs/metal-wallet-server.war
-          target: /home/ubuntu/metal-wallet-server/tobe
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/ubuntu/metal-wallet-backend-v2/"
 
-      - name: EC2에서 서버 디렉토리 업데이트 및 application.properties 파일 생성
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
           script: |
-            rm -rf /home/ubuntu/metal-wallet-server/current
-            mkdir /home/ubuntu/metal-wallet-server/current
-            mv /home/ubuntu/metal-wallet-server/tobe/metal-wallet-server.war /home/ubuntu/metal-wallet-server/current/metal-wallet-server.war
-            echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/metal-wallet-server/current/application.properties
-            cd /home/ubuntu/metal-wallet-server/current
-            sudo fuser -k -n tcp 8080 || true
-            sudo systemctl restart tomcat
+            SPRING_PROFILE=${{ env.PROFILE }}
+            
+            # 기존 컨테이너 중지 및 삭제
+            docker stop myapp-$SPRING_PROFILE || true
+            docker rm myapp-$SPRING_PROFILE || true
+            
+            # Docker Hub에서 최신 이미지 pull
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:$SPRING_PROFILE
+
+            APP_DIR="/home/ubuntu/metal-wallet-backend-v2"
+            
+            echo "📦 Deploying ${SPRING_PROFILE} environment..."
+            
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+            echo "🔍 Checking APP_DIR path..."
+            pwd
+            ls -l
+
+            cat > .env <<EOF
+            PROFILE=${SPRING_PROFILE}
+            EOF
+            
+            echo "✅ .env.${SPRING_PROFILE} file created!"
+
+            # 컨테이너 실행 (docker-compose)
+            docker compose --env-file .env up -d
