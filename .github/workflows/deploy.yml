@@ -109,4 +109,4 @@ jobs:
 
 
             # 컨테이너 실행 (docker-compose)
-            docker compose -f docker-compose.$SPRING_PROFILE.yml up -d
+            docker compose up -d
