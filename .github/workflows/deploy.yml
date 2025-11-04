@@ -64,12 +64,12 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
+          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${PROFILE}
           docker build -t $IMAGE_TAG .
   
       - name: Push Docker image
         run: |
-          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
+          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${PROFILE}
           docker push $IMAGE_TAG
 
       - name: Copy docker-compose.yml to EC2
