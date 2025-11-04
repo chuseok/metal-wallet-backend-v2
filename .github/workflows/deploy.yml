@@ -64,6 +64,7 @@ jobs:
 
       - name: Build Docker image
         run: |
+          cd $GITHUB_WORKSPACE
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
           docker build -t $IMAGE_TAG .
 
@@ -111,7 +112,7 @@ jobs:
             PROFILE=${SPRING_PROFILE}
             EOF
             
-            echo "✅ .env.${SPRING_PROFILE} file created!"
+            echo "✅ .env file created!"
 
             # 컨테이너 실행 (docker-compose)
             docker compose --env-file .env up -d
