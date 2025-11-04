@@ -64,7 +64,6 @@ jobs:
 
       - name: Build Docker image
         run: |
-          cd $GITHUB_WORKSPACE
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
           docker build -t $IMAGE_TAG .
 
@@ -79,15 +78,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "docker-compose.yml Dockerfile"
-          target: "/home/ubuntu/metal-wallet-backend-v2/"
-
-      - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
+          source: "docker-compose.yml"
           script: |
             SPRING_PROFILE=${{ env.PROFILE }}
             
