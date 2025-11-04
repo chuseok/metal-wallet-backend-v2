@@ -65,6 +65,10 @@ jobs:
       - name: Build Docker image
         run: |
           cd $GITHUB_WORKSPACE
+          pwd
+          ls -l
+          echo "📦 Build Docker"
+          ls -l | grep -i dockerfile
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
           docker build -t $IMAGE_TAG .
 
