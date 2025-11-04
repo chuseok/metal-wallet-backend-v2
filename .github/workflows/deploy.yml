@@ -88,7 +88,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            export PROFILE=${{ env.PROFILE }}
             SPRING_PROFILE=${{ env.PROFILE }}
             
             # 기존 컨테이너 중지 및 삭제
@@ -108,6 +107,11 @@ jobs:
             pwd
             ls -l
 
+            cat > .env.${SPRING_PROFILE} <<EOF
+            PROFILE=${SPRING_PROFILE}
+            EOF
+            
+            echo "✅ .env.${SPRING_PROFILE} file created!"
 
             # 컨테이너 실행 (docker-compose)
-            docker compose up -d
+            docker compose --env-file .env.${SPRING_PROFILE} up -d
