@@ -65,10 +65,6 @@ jobs:
       - name: Build Docker image
         run: |
           cd $GITHUB_WORKSPACE
-          pwd
-          ls -l
-          echo "📦 Build Docker"
-          ls -l | grep -i dockerfile
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
           docker build -t $IMAGE_TAG .
 
@@ -96,6 +92,12 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             SPRING_PROFILE=${{ env.PROFILE }}
+            
+            echo "📦 curr:"
+            pwd
+            ls -l
+            echo "📦 dockerfile:"
+            ls -l | grep -i dockerfile
             
             # 기존 컨테이너 중지 및 삭제
             docker stop myapp-$SPRING_PROFILE || true
