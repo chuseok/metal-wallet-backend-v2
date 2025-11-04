@@ -18,8 +18,7 @@ services:
     depends_on:
       - redis
     environment:
-      - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} \
-        -Dprofile=${PROFILE}
+      - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
 #      - JAVA_OPTS=-javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.3.jar \
 #        -Dpinpoint.agentId=metal-wallet-01 \
 #        -Dpinpoint.applicationName=metal-wallet \
