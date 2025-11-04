@@ -4,6 +4,8 @@ services:
   app:
     container_name: myapp-${PROFILE}
     image: chuseok/metalwallet-backend:${PROFILE}
+    env_file:
+      - .env
 #    volumes:
 #      - ./pinpoint-agent:/pinpoint-agent
     build:

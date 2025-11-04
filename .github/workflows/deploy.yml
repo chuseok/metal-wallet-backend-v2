@@ -107,11 +107,11 @@ jobs:
             pwd
             ls -l
 
-            cat > .env.${SPRING_PROFILE} <<EOF
+            cat > .env <<EOF
             PROFILE=${SPRING_PROFILE}
             EOF
             
             echo "✅ .env.${SPRING_PROFILE} file created!"
 
             # 컨테이너 실행 (docker-compose)
-            docker compose --env-file .env.${SPRING_PROFILE} up -d
+            docker compose --env-file .env up -d
