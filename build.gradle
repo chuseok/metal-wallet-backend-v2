@@ -11,7 +11,7 @@ repositories {
 }
 
 ext {
-    junitVersion = '5.9.2'
+//    junitVersion = '5.9.2'
     springVersion = '5.3.24'
     springSecurityVersion = '5.7.3'
 }
@@ -95,9 +95,12 @@ dependencies {
     implementation 'org.json:json:20210307'
 
     // Testing Libraries
+    testImplementation platform('org.junit:junit-bom:5.11.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation "org.springframework:spring-test:${springVersion}"
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.14.1'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.14.1'
