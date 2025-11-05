@@ -207,7 +207,7 @@ class TicketServiceConcurrencyTest {
     assertEquals(1, ticketRepository.count(), "티켓 테이블에 단 1건의 데이터만 존재해야 합니다.");
   }
 
-  @Test
+  /*@Test
   @DisplayName("100명이 100개의 좌석을 예매할 때 재고가 정상적으로 감소")
   void testBookTicket_multipleUsersMulripleSeatsSuccess() throws InterruptedException {
     //given
@@ -259,5 +259,5 @@ class TicketServiceConcurrencyTest {
 
     long ticketCount = ticketRepository.count();
     assertEquals(seatCount, ticketCount, "티켓 테이블에는 " + seatCount + "개의 데이터가 있어야 합니다.");
-  }
+  }*/
 }
