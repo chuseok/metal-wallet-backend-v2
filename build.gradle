@@ -126,5 +126,7 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
 }
