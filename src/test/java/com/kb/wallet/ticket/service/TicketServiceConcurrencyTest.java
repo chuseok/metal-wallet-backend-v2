@@ -43,7 +43,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppConfig.class)
 @WebAppConfiguration
-@ActiveProfiles("test")
+@ActiveProfiles("main")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag("integration")
 class TicketServiceConcurrencyTest {
