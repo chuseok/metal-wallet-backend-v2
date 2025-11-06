@@ -8,7 +8,7 @@ on:
       - test
 
 jobs:
-  My-Deploy-Job:
+  build:
     runs-on: ubuntu-latest
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || 'test' }}
     steps:
@@ -21,6 +21,9 @@ jobs:
           distribution: corretto
           java-version: '17'
 
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
       - name: Set PROFILE based on branch
         run: |
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
@@ -31,7 +34,6 @@ jobs:
             echo "PROFILE=test" >> $GITHUB_ENV
           fi
         shell: bash
-
 
       - name: Make application-${{ env.PROFILE }}.properties
         shell: bash
@@ -50,11 +52,8 @@ jobs:
             echo "✅ wrote application-test.properties"
           fi
 
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
-
       - name: Build WAR
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean build --info
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -62,6 +61,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || 'test' }}
+    steps:
       - name: Build Docker image
         run: |
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${PROFILE}
