@@ -25,22 +25,22 @@ public class DataSourceConfig {
    */
 
   @Value("${spring.datasource.hikari.minimum-idle}")
-  private int minimumIdle;
+  private static int minimumIdle;
 
   @Value("${spring.datasource.hikari.maximum-pool-size}")
-  private int maximumPoolSize;
+  private static int maximumPoolSize;
 
   @Value("${spring.datasource.hikari.connection-timeout}")
-  private long connectionTimeout;
+  private static long connectionTimeout;
 
   @Value("${spring.datasource.hikari.idle-timeout}")
-  private long idleTimeout;
+  private static long idleTimeout;
 
   @Value("${spring.datasource.hikari.max-lifetime}")
-  private long maxLifetime;
+  private static long maxLifetime;
 
   @Value("${spring.datasource.driver-class-name}")
-  private String driverClassName;
+  private static String driverClassName;
 
   @Configuration
   @Profile("dev")
@@ -83,26 +83,18 @@ public class DataSourceConfig {
   }
 
   @Configuration
-  @Profile("test")
-  @PropertySource("classpath:application-test.properties")
-  class TestConfig {
-
-    @Value("${spring.datasource.url}")
-    private String datasourceUrl;
-
-    @Value("${spring.datasource.username}")
-    private String datasourceUsername;
-
-    @Value("${spring.datasource.password}")
-    private String datasourcePassword;
-
+  public static class TestConfig {
     @Bean
     public DataSource dataSource() {
-      return createHikariDataSource(datasourceUrl, datasourceUsername, datasourcePassword);
+      String url = System.getProperty("DB_URL");
+      String username = System.getProperty("DB_USERNAME");
+      String password = System.getProperty("DB_PASSWORD");
+
+      return createHikariDataSource(url, username, password);
     }
   }
 
-  private DataSource createHikariDataSource(String dbUrl,
+  private static DataSource createHikariDataSource(String dbUrl,
       String dbUsername, String dbPassword) {
     HikariConfig config = new HikariConfig();
     config.setDriverClassName(driverClassName);
