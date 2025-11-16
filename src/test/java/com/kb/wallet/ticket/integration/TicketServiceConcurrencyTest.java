@@ -1,4 +1,4 @@
-package com.kb.wallet.ticket.service;
+package com.kb.wallet.ticket.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,6 +15,7 @@ import com.kb.wallet.seat.repository.SectionRepository;
 import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.repository.*;
+import com.kb.wallet.ticket.service.TicketService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
