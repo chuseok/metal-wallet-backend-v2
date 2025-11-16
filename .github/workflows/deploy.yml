@@ -8,9 +8,9 @@ on:
       - test
 
 jobs:
-  My-Deploy-Job:
+  build:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || 'test' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,17 +21,17 @@ jobs:
           distribution: corretto
           java-version: '17'
 
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
       - name: Set PROFILE based on branch
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]]; then
             echo "PROFILE=prod" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "develop" ]]; then
-            echo "PROFILE=dev" >> $GITHUB_ENV
           else
-            echo "PROFILE=test" >> $GITHUB_ENV
+            echo "PROFILE=dev" >> $GITHUB_ENV
           fi
         shell: bash
-
 
       - name: Make application-${{ env.PROFILE }}.properties
         shell: bash
@@ -39,22 +39,16 @@ jobs:
           mkdir -p ./src/main/resources
           cd ./src/main/resources
 
-          if [[ "$PROFILE" == "prod" ]]; then
-            echo "${{ secrets.APPLICATION_PROPERTIES_PROD }}" > application-prod.properties
-            echo "✅ wrote application-prod.properties"
-          elif [[ "$PROFILE" == "dev" ]]; then
+          if [[ "$PROFILE" == "dev" ]]; then
             echo "${{ secrets.APPLICATION_PROPERTIES_DEV }}" > application-dev.properties
             echo "✅ wrote application-dev.properties"
           else
-            echo "${{ secrets.APPLICATION_PROPERTIES }}" > application-test.properties
-            echo "✅ wrote application-test.properties"
+            echo "${{ secrets.APPLICATION_PROPERTIES_PROD }}" > application-prod.properties
+            echo "✅ wrote application-prod.properties"
           fi
 
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
-
       - name: Build WAR
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean build --info
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -62,14 +56,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' }}
+    steps:
       - name: Build Docker image
         run: |
-          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
+          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${PROFILE}
           docker build -t $IMAGE_TAG .
-
+  
       - name: Push Docker image
         run: |
-          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ github.ref_name }}
+          IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${PROFILE}
           docker push $IMAGE_TAG
 
       - name: Copy docker-compose.yml to EC2
@@ -89,6 +88,12 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             SPRING_PROFILE=${{ env.PROFILE }}
+            
+            echo "📦 curr:"
+            pwd
+            ls -l
+            echo "📦 dockerfile:"
+            ls -l | grep -i dockerfile
             
             # 기존 컨테이너 중지 및 삭제
             docker stop myapp-$SPRING_PROFILE || true
@@ -111,7 +116,7 @@ jobs:
             PROFILE=${SPRING_PROFILE}
             EOF
             
-            echo "✅ .env.${SPRING_PROFILE} file created!"
+            echo "✅ .env file created!"
 
             # 컨테이너 실행 (docker-compose)
             docker compose --env-file .env up -d

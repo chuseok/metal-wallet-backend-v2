@@ -6,37 +6,14 @@ services:
     image: chuseok/metalwallet-backend:${PROFILE}
     env_file:
       - .env
-#    volumes:
-#      - ./pinpoint-agent:/pinpoint-agent
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        WAR_FILE: build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
     ports:
       - "8080:8080"
     depends_on:
       - redis
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
-#      - JAVA_OPTS=-javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.3.jar \
-#        -Dpinpoint.agentId=metal-wallet-01 \
-#        -Dpinpoint.applicationName=metal-wallet \
-#        -Dprofiler.transport.grpc.collector.ip=pinpoint-collector \
-#        -Dprofiler.transport.grpc.collector.port=9991
-#        -Dspring.profiles.active=${PROFILE} \
-#        -Dprofile=${PROFILE}
-#    networks:
-#      - monitor-net
 
   redis:
     image: redis:7
     ports:
       - "6379:6379"
-#    networks:
-#      - monitor-net
-
-
-#networks:
-#  monitor-net:
-#    external: true

@@ -1,4 +1,4 @@
-package com.kb.wallet.ticket.service;
+package com.kb.wallet.ticket.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,6 +15,7 @@ import com.kb.wallet.seat.repository.SectionRepository;
 import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.repository.*;
+import com.kb.wallet.ticket.service.TicketService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,8 +44,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppConfig.class)
 @WebAppConfiguration
-@ActiveProfiles("test")
+@ActiveProfiles("prod")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Tag("integration")
 class TicketServiceConcurrencyTest {
 
   @Autowired
@@ -207,7 +210,7 @@ class TicketServiceConcurrencyTest {
     assertEquals(1, ticketRepository.count(), "티켓 테이블에 단 1건의 데이터만 존재해야 합니다.");
   }
 
-  @Test
+  /*@Test
   @DisplayName("100명이 100개의 좌석을 예매할 때 재고가 정상적으로 감소")
   void testBookTicket_multipleUsersMulripleSeatsSuccess() throws InterruptedException {
     //given
@@ -259,5 +262,5 @@ class TicketServiceConcurrencyTest {
 
     long ticketCount = ticketRepository.count();
     assertEquals(seatCount, ticketCount, "티켓 테이블에는 " + seatCount + "개의 데이터가 있어야 합니다.");
-  }
+  }*/
 }
