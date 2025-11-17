@@ -43,27 +43,20 @@ public class TestContainersTest {
     String redisHost = redis.getHost();
     int redisPort = redis.getFirstMappedPort();
 
-    System.setProperty("REDIS_HOST", redisHost);
-    System.setProperty("REDIS_PORT", String.valueOf(redisPort));
+    System.setProperty("spring.redis.host", redisHost);
+    System.setProperty("spring.redis.port", String.valueOf(redisPort));
 
     // DB connection properties
     System.setProperty("DATASOURCE_URL", mysql.getJdbcUrl());
     System.setProperty("DATASOURCE_USERNAME", mysql.getUsername());
     System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
-    Config config = new Config();
-    config.useSingleServer()
-        .setAddress("redis://" + redisHost + ":" + redisPort);
-    redisson = Redisson.create(config);
-
     context = new AnnotationConfigApplicationContext();
-    context.register(TestDataSourceConfig.class);
-    context.register(RedisConfig.class);
-    context.register(RedisTestConfig.class);
-    context.refresh();
 
-    System.out.println("✅ TestContainers MySQL URL: " + mysql.getJdbcUrl());
-    System.out.println("✅ TestContainers Redis Host:Port " + redisHost + ":" + redisPort);
+    context.register(TestDataSourceConfig.class); // MySQL
+    context.register(RedisConfig.class);          // Redis
+
+    redisson = context.getBean(RedissonClient.class);
 
     System.out.println("✅ TestContainers MySQL URL: " + mysql.getJdbcUrl());
     System.out.println("✅ TestContainers Redis Host:Port " + redisHost + ":" + redisPort);
