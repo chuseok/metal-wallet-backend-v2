@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-test-container-setting' && 'prod' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,7 +26,7 @@ jobs:
 
       - name: Set PROFILE based on branch
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]]; then
+          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]] || [[ "${GITHUB_REF_NAME}" == "test/6-test-container-setting" ]]; then
             echo "PROFILE=prod" >> $GITHUB_ENV
           else
             echo "PROFILE=dev" >> $GITHUB_ENV
@@ -59,7 +59,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-test-container-setting' && 'prod' }}
     steps:
       - name: Build Docker image
         run: |
