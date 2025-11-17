@@ -1,6 +1,7 @@
 package com.kb.wallet.ticket.integration;
 
-import com.kb.wallet.global.config.TestDataSourceConfig;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -8,19 +9,15 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { TestDataSourceConfig.class })
 @Testcontainers
 @Tag("integration")
 public class TestContainersTest {
@@ -68,6 +65,24 @@ public class TestContainersTest {
       while (rs.next()) {
         System.out.println("DB Test Query Result: " + rs.getInt(1));
       }
+    }
+  }
+
+  public static class TestDataSourceConfig {
+    @Bean
+    public DataSource dataSource() {
+      String url = System.getProperty("DATASOURCE_URL");
+      String username = System.getProperty("DATASOURCE_USERNAME");
+      String password = System.getProperty("DATASOURCE_PASSWORD");
+
+      HikariConfig config = new HikariConfig();
+      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+      config.setJdbcUrl(url);
+      config.setUsername(username);
+      config.setPassword(password);
+      config.setMaximumPoolSize(5);
+      config.setMinimumIdle(1);
+      return new HikariDataSource(config);
     }
   }
 }
