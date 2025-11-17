@@ -1,5 +1,6 @@
 package com.kb.wallet.ticket.integration;
 
+import com.kb.wallet.global.config.RedisConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
@@ -31,6 +33,7 @@ public class TestContainersTest {
       .withExposedPorts(6379);
 
   static RedissonClient redisson;
+  static AnnotationConfigApplicationContext context;
 
   @BeforeAll
   static void setUp() {
@@ -52,6 +55,15 @@ public class TestContainersTest {
     config.useSingleServer()
         .setAddress("redis://" + redisHost + ":" + redisPort);
     redisson = Redisson.create(config);
+
+    context = new AnnotationConfigApplicationContext();
+    context.register(TestDataSourceConfig.class);
+    context.register(RedisConfig.class);
+    context.registerBean(RedissonClient.class, () -> redisson);
+    context.refresh();
+
+    System.out.println("✅ TestContainers MySQL URL: " + mysql.getJdbcUrl());
+    System.out.println("✅ TestContainers Redis Host:Port " + redisHost + ":" + redisPort);
 
     System.out.println("✅ TestContainers MySQL URL: " + mysql.getJdbcUrl());
     System.out.println("✅ TestContainers Redis Host:Port " + redisHost + ":" + redisPort);
