@@ -64,7 +64,8 @@ public class TestContainersTest {
     System.out.println("✅ TestContainers Redis Host:Port " + redisHost + ":" + redisPort);
   }
   @Test
-  void testDatabaseConnection(DataSource dataSource) throws Exception {
+  void testDatabaseConnection() throws Exception {
+    DataSource dataSource = context.getBean(DataSource.class);
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT 1")) {
