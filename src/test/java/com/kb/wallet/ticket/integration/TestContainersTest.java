@@ -53,8 +53,10 @@ public class TestContainersTest {
 
     context = new AnnotationConfigApplicationContext();
 
-    context.register(TestDataSourceConfig.class); // MySQL
-    context.register(RedisConfig.class);          // Redis
+    context.register(TestDataSourceConfig.class);
+    context.register(RedisConfig.class);
+
+    context.refresh();
 
     redisson = context.getBean(RedissonClient.class);
 
