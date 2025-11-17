@@ -1,6 +1,6 @@
 package com.kb.wallet.ticket.integration;
 
-import com.kb.wallet.global.config.DataSourceConfig;
+import com.kb.wallet.global.config.TestDataSourceConfig;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -20,7 +20,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { DataSourceConfig.TestConfig.class })
+@ContextConfiguration(classes = { TestDataSourceConfig.class })
 @Testcontainers
 @Tag("integration")
 public class TestContainersTest {

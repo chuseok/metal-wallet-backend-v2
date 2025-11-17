@@ -25,22 +25,22 @@ public class DataSourceConfig {
    */
 
   @Value("${spring.datasource.hikari.minimum-idle}")
-  private static int minimumIdle;
+  private int minimumIdle;
 
   @Value("${spring.datasource.hikari.maximum-pool-size}")
-  private static int maximumPoolSize;
+  private int maximumPoolSize;
 
   @Value("${spring.datasource.hikari.connection-timeout}")
-  private static long connectionTimeout;
+  private long connectionTimeout;
 
   @Value("${spring.datasource.hikari.idle-timeout}")
-  private static long idleTimeout;
+  private long idleTimeout;
 
   @Value("${spring.datasource.hikari.max-lifetime}")
-  private static long maxLifetime;
+  private long maxLifetime;
 
   @Value("${spring.datasource.driver-class-name}")
-  private static String driverClassName;
+  private String driverClassName;
 
   @Configuration
   @Profile("dev")
@@ -82,19 +82,7 @@ public class DataSourceConfig {
     }
   }
 
-  @Configuration
-  public static class TestConfig {
-    @Bean
-    public DataSource dataSource() {
-      String url = System.getProperty("DATASOURCE_URL");
-      String username = System.getProperty("DATASOURCE_USERNAME");
-      String password = System.getProperty("DATASOURCE_PASSWORD");
-
-      return createHikariDataSource(url, username, password);
-    }
-  }
-
-  private static DataSource createHikariDataSource(String dbUrl,
+  private DataSource createHikariDataSource(String dbUrl,
       String dbUsername, String dbPassword) {
     HikariConfig config = new HikariConfig();
     config.setDriverClassName(driverClassName);
