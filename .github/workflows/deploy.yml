@@ -12,6 +12,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-testcontainer-setting' && 'prod' }}
+    env:
+      TEST_MYSQL_DB: ${{ secrets.TEST_MYSQL_DB }}
+      TEST_MYSQL_USER: ${{ secrets.TEST_MYSQL_USER }}
+      TEST_MYSQL_PASSWORD: ${{ secrets.TEST_MYSQL_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
