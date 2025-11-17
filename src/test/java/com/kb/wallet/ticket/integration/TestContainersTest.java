@@ -59,7 +59,7 @@ public class TestContainersTest {
     context = new AnnotationConfigApplicationContext();
     context.register(TestDataSourceConfig.class);
     context.register(RedisConfig.class);
-    context.registerBean(RedissonClient.class, () -> redisson);
+    context.register(RedisTestConfig.class);
     context.refresh();
 
     System.out.println("✅ TestContainers MySQL URL: " + mysql.getJdbcUrl());
