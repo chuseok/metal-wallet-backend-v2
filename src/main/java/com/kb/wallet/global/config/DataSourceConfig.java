@@ -86,9 +86,9 @@ public class DataSourceConfig {
   public static class TestConfig {
     @Bean
     public DataSource dataSource() {
-      String url = System.getProperty("DB_URL");
-      String username = System.getProperty("DB_USERNAME");
-      String password = System.getProperty("DB_PASSWORD");
+      String url = System.getProperty("DATASOURCE_URL");
+      String username = System.getProperty("DATASOURCE_USERNAME");
+      String password = System.getProperty("DATASOURCE_PASSWORD");
 
       return createHikariDataSource(url, username, password);
     }

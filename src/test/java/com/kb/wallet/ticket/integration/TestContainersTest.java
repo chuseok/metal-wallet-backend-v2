@@ -47,9 +47,9 @@ public class TestContainersTest {
     System.setProperty("REDIS_PORT", String.valueOf(redisPort));
 
     // DB connection properties
-    System.setProperty("DB_URL", mysql.getJdbcUrl());
-    System.setProperty("DB_USERNAME", mysql.getUsername());
-    System.setProperty("DB_PASSWORD", mysql.getPassword());
+    System.setProperty("DATASOURCE_URL", mysql.getJdbcUrl());
+    System.setProperty("DATASOURCE_USERNAME", mysql.getUsername());
+    System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
     Config config = new Config();
     config.useSingleServer()
