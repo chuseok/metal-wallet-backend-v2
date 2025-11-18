@@ -89,6 +89,12 @@ jobs:
       PROFILE: ${{ needs.build.outputs.PROFILE }}
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-testcontainer-setting' && 'prod' }}
     steps:
+      - name: Check current directory
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files here:"
+          ls -l
       - name: Build Docker image
         run: |
           IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/metalwallet-backend:${{ env.PROFILE }}
