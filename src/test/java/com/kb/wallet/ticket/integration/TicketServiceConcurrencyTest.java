@@ -118,9 +118,10 @@ class TicketServiceConcurrencyTest {
 
     @Override
     public void initialize(ConfigurableApplicationContext context) {
+      context.getEnvironment().setActiveProfiles("test");
+
       mysql.start();
       redis.start();
-
 
       String jdbcUrl = mysql.getJdbcUrl();
       String username = mysql.getUsername();
@@ -138,7 +139,6 @@ class TicketServiceConcurrencyTest {
       props.put("spring.redis.port", redisPort);
 
       context.getEnvironment().getPropertySources().addFirst(new org.springframework.core.env.PropertiesPropertySource("testProps", props));
-      context.getEnvironment().setActiveProfiles("test");
     }
   }
 
