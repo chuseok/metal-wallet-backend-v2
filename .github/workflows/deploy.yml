@@ -38,6 +38,14 @@ jobs:
           fi
         shell: bash
 
+      - name: Make application-test.properties
+        shell: bash
+        run: |
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
+          echo "${{ secrets.APPLICATION_PROPERTIES_TEST }}" > application-test.properties
+          echo "✅ wrote application-test.properties"
+
       - name: Make application-${{ env.PROFILE }}.properties
         shell: bash
         run: |

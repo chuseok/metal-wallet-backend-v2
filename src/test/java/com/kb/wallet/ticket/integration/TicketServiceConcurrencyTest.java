@@ -14,6 +14,8 @@ import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.seat.repository.SectionRepository;
 import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
+import com.kb.wallet.ticket.integration.TicketServiceConcurrencyTest.TestDataSourceConfig;
+import com.kb.wallet.ticket.integration.TicketServiceConcurrencyTest.TestRedisConfig;
 import com.kb.wallet.ticket.repository.*;
 import com.kb.wallet.ticket.service.TicketService;
 import com.zaxxer.hikari.HikariConfig;
@@ -61,9 +63,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = AppConfig.class)
+@ContextConfiguration(classes = {AppConfig.class, TestDataSourceConfig.class, TestRedisConfig.class})
 @WebAppConfiguration
-@ActiveProfiles("prod")
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
 @Tag("integration")
