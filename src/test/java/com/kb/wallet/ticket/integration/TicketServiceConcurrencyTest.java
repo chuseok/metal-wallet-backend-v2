@@ -42,10 +42,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -78,22 +81,16 @@ class TicketServiceConcurrencyTest {
 
   @Autowired
   private TicketService ticketService;
-
   @Autowired
   private MemberRepository memberRepository;
-
   @Autowired
   private MusicalRepository musicalRepository;
-
   @Autowired
   private ScheduleRepository scheduleRepository;
-
   @Autowired
   private SectionRepository sectionRepository;
-
   @Autowired
   private SeatRepository seatRepository;
-
   @Autowired
   private TicketRepository ticketRepository;
 
@@ -109,6 +106,11 @@ class TicketServiceConcurrencyTest {
   @BeforeEach
   void setUpBeforeEach() {
     cleanUpAll();
+    createTestMusicalScheduleSection();
+
+  }
+
+  private void createTestMusicalScheduleSection() {
     musical = musicalRepository.save(new Musical(
         1L,
         "킹키부츠",
@@ -162,26 +164,13 @@ class TicketServiceConcurrencyTest {
     System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
     context = new AnnotationConfigApplicationContext();
-    context.register(TestDataSourceConfig.class, RedisConfig.class);
+    context.register(TestDataSourceConfig.class, TestRedisConfig.class);
     context.refresh();
 
     redisson = context.getBean(RedissonClient.class);
 
     System.out.println("🔧 MySQL URL: " + mysql.getJdbcUrl());
     System.out.println("🔧 Redis Host:Port " + redis.getHost() + ":" + redis.getFirstMappedPort());
-  }
-
-  @AfterEach
-  void tearDown() {
-    ticketRepository.deleteAll();
-  }
-
-  void cleanUpAll() {
-    ticketRepository.deleteAll();
-    seatRepository.deleteAll();
-    sectionRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    musicalRepository.deleteAll();
   }
 
   @Transactional
@@ -198,6 +187,19 @@ class TicketServiceConcurrencyTest {
     }
   }
 
+  @AfterEach
+  void tearDown() {
+    ticketRepository.deleteAll();
+  }
+
+  void cleanUpAll() {
+    ticketRepository.deleteAll();
+    seatRepository.deleteAll();
+    sectionRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    musicalRepository.deleteAll();
+  }
+
   @Test
   void testDatabaseConnection() throws Exception {
     DataSource dataSource = context.getBean(DataSource.class);
@@ -208,29 +210,6 @@ class TicketServiceConcurrencyTest {
       while (rs.next()) {
         System.out.println("DB Test Query Result: " + rs.getInt(1));
       }
-    }
-  }
-
-  public static class TestDataSourceConfig {
-    @Bean
-    public DataSource dataSource() {
-      String url = System.getProperty("DATASOURCE_URL");
-      String log4jdbcUrl = url.replace(
-          "jdbc:mysql:",
-          "jdbc:log4jdbc:mysql:"
-      ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
-      String username = System.getProperty("DATASOURCE_USERNAME");
-      String password = System.getProperty("DATASOURCE_PASSWORD");
-
-      HikariConfig config = new HikariConfig();
-
-      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
-      config.setJdbcUrl(log4jdbcUrl);
-      config.setUsername(username);
-      config.setPassword(password);
-      config.setMaximumPoolSize(5);
-      config.setMinimumIdle(1);
-      return new HikariDataSource(config);
     }
   }
 
@@ -293,6 +272,46 @@ class TicketServiceConcurrencyTest {
     //then
     assertEquals(99, availableSeats, "가용 가능한 좌석 수는 99이여야 합니다.");
     assertEquals(1, ticketRepository.count(), "티켓 테이블에 단 1건의 데이터만 존재해야 합니다.");
+  }
+
+
+  public static class TestDataSourceConfig {
+    @Bean
+    public DataSource dataSource() {
+      String url = System.getProperty("DATASOURCE_URL");
+      String log4jdbcUrl = url.replace(
+          "jdbc:mysql:",
+          "jdbc:log4jdbc:mysql:"
+      ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
+      String username = System.getProperty("DATASOURCE_USERNAME");
+      String password = System.getProperty("DATASOURCE_PASSWORD");
+
+      HikariConfig config = new HikariConfig();
+
+      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+      config.setJdbcUrl(log4jdbcUrl);
+      config.setUsername(username);
+      config.setPassword(password);
+      config.setMaximumPoolSize(5);
+      config.setMinimumIdle(1);
+      return new HikariDataSource(config);
+    }
+  }
+
+  @Configuration
+  public class TestRedisConfig {
+
+    @Bean
+    public RedissonClient redissonClient() {
+      String host = System.getProperty("spring.redis.host");
+      String port = System.getProperty("spring.redis.port");
+
+      Config config = new Config();
+      config.useSingleServer()
+          .setAddress("redis://" + host + ":" + port);
+
+      return Redisson.create(config);
+    }
   }
 
   /*@Test
