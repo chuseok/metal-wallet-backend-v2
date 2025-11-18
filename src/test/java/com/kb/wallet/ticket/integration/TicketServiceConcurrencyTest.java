@@ -61,8 +61,6 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = AppConfig.class)
 @WebAppConfiguration
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
