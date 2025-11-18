@@ -5,11 +5,13 @@ import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
 @Configuration
 @Slf4j
@@ -86,15 +88,17 @@ public class DataSourceConfig {
   @Profile("test")
   @PropertySource("classpath:application-test.properties")
   public static class TestDataSourceConfig {
+    @Autowired
+    private Environment env;
     @Bean
     public DataSource dataSource() {
-      String url = System.getProperty("spring.datasource.url");
+      String url = env.getProperty("spring.datasource.url");
       String log4jdbcUrl = url.replace(
           "jdbc:mysql:",
           "jdbc:log4jdbc:mysql:"
       ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
-      String username = System.getProperty("spring.datasource.username");
-      String password = System.getProperty("spring.datasource.password");
+      String username = env.getProperty("spring.datasource.username");
+      String password = env.getProperty("spring.datasource.password");
 
       HikariConfig config = new HikariConfig();
 
