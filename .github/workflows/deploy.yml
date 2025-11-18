@@ -32,6 +32,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Set PROFILE based on branch
+        id: set-profile
         run: |
           if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]] || [[ "${GITHUB_REF_NAME}" == "test/6-testcontainer-setting" ]]; then
             echo "PROFILE=prod" >> $GITHUB_ENV
