@@ -80,19 +80,12 @@ class TicketServiceConcurrencyTest {
   static RedissonClient redisson;
   static AnnotationConfigApplicationContext context;
 
-  @Autowired
   private TicketService ticketService;
-  @Autowired
   private MemberRepository memberRepository;
-  @Autowired
   private MusicalRepository musicalRepository;
-  @Autowired
   private ScheduleRepository scheduleRepository;
-  @Autowired
   private SectionRepository sectionRepository;
-  @Autowired
   private SeatRepository seatRepository;
-  @Autowired
   private TicketRepository ticketRepository;
 
   private Long testSeatId;
@@ -170,6 +163,14 @@ class TicketServiceConcurrencyTest {
     context.refresh();
 
     redisson = context.getBean(RedissonClient.class);
+
+    ticketService = context.getBean(TicketService.class);
+    memberRepository = context.getBean(MemberRepository.class);
+    musicalRepository = context.getBean(MusicalRepository.class);
+    scheduleRepository = context.getBean(ScheduleRepository.class);
+    sectionRepository = context.getBean(SectionRepository.class);
+    seatRepository = context.getBean(SeatRepository.class);
+    ticketRepository = context.getBean(TicketRepository.class);
 
     System.out.println("🔧 MySQL URL: " + mysql.getJdbcUrl());
     System.out.println("🔧 Redis Host:Port " + redis.getHost() + ":" + redis.getFirstMappedPort());
