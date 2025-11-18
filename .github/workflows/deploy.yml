@@ -43,6 +43,7 @@ jobs:
           fi
         shell: bash
 
+
       - name: Make application-test.properties
         shell: bash
         run: |
