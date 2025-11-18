@@ -3,6 +3,7 @@ package com.kb.wallet.ticket.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.kb.wallet.global.config.AppConfig;
+import com.kb.wallet.global.config.TestConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -166,7 +167,8 @@ class TicketServiceConcurrencyTest {
     System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
     context = new AnnotationConfigApplicationContext();
-    context.register(TestDataSourceConfig.class, TestRedisConfig.class);
+    context.register(TestRedisConfig.class);
+    context.register(TestConfig.class);
     context.refresh();
 
     redisson = context.getBean(RedissonClient.class);

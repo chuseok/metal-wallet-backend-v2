@@ -82,6 +82,32 @@ public class DataSourceConfig {
     }
   }
 
+  @Configuration
+  @Profile("test")
+  @PropertySource("classpath:application-test.properties")
+  public static class TestDataSourceConfig {
+    @Bean
+    public DataSource dataSource() {
+      String url = System.getProperty("DATASOURCE_URL");
+      String log4jdbcUrl = url.replace(
+          "jdbc:mysql:",
+          "jdbc:log4jdbc:mysql:"
+      ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
+      String username = System.getProperty("DATASOURCE_USERNAME");
+      String password = System.getProperty("DATASOURCE_PASSWORD");
+
+      HikariConfig config = new HikariConfig();
+
+      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+      config.setJdbcUrl(log4jdbcUrl);
+      config.setUsername(username);
+      config.setPassword(password);
+      config.setMaximumPoolSize(5);
+      config.setMinimumIdle(1);
+      return new HikariDataSource(config);
+    }
+  }
+
   private DataSource createHikariDataSource(String dbUrl,
       String dbUsername, String dbPassword) {
     HikariConfig config = new HikariConfig();
