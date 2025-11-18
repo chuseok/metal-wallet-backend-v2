@@ -26,7 +26,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -164,6 +167,10 @@ class TicketServiceConcurrencyTest {
     System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
     context = new AnnotationConfigApplicationContext();
+    Map<String, Object> props = new HashMap<>();
+    props.put("spring.redis.host", redis.getHost());
+    props.put("spring.redis.port", redis.getFirstMappedPort());
+    context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("testProps", props));
     context.register(TestDataSourceConfig.class, TestRedisConfig.class);
     context.refresh();
 
