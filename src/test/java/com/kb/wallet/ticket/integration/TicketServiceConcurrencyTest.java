@@ -115,7 +115,10 @@ class TicketServiceConcurrencyTest {
 
     @Override
     public void initialize(ConfigurableApplicationContext context) {
-      // MySQL 연결 정보
+      mysql.start();
+      redis.start();
+
+
       String jdbcUrl = mysql.getJdbcUrl();
       String username = mysql.getUsername();
       String password = mysql.getPassword();
@@ -125,7 +128,7 @@ class TicketServiceConcurrencyTest {
       props.put("spring.datasource.username", username);
       props.put("spring.datasource.password", password);
 
-      // Redis 연결 정보
+
       String redisHost = redis.getHost();
       String redisPort = String.valueOf(redis.getFirstMappedPort());
       props.put("spring.redis.host", redisHost);

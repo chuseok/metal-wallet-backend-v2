@@ -88,13 +88,13 @@ public class DataSourceConfig {
   public static class TestDataSourceConfig {
     @Bean
     public DataSource dataSource() {
-      String url = System.getProperty("DATASOURCE_URL");
+      String url = System.getProperty("spring.datasource.url");
       String log4jdbcUrl = url.replace(
           "jdbc:mysql:",
           "jdbc:log4jdbc:mysql:"
       ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
-      String username = System.getProperty("DATASOURCE_USERNAME");
-      String password = System.getProperty("DATASOURCE_PASSWORD");
+      String username = System.getProperty("spring.datasource.username");
+      String password = System.getProperty("spring.datasource.password");
 
       HikariConfig config = new HikariConfig();
 
