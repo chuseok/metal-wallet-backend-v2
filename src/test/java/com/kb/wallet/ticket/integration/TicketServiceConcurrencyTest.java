@@ -3,7 +3,6 @@ package com.kb.wallet.ticket.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.kb.wallet.global.config.AppConfig;
-import com.kb.wallet.global.config.RedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -159,18 +158,14 @@ class TicketServiceConcurrencyTest {
     mysql.start();
     redis.start();
 
-    System.setProperty("spring.redis.host", redis.getHost());
-    System.setProperty("spring.redis.port", String.valueOf(redis.getFirstMappedPort()));
+    System.setProperty("test.redis.host", redis.getHost());
+    System.setProperty("test.redis.port", String.valueOf(redis.getFirstMappedPort()));
 
     System.setProperty("DATASOURCE_URL", mysql.getJdbcUrl());
     System.setProperty("DATASOURCE_USERNAME", mysql.getUsername());
     System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
     context = new AnnotationConfigApplicationContext();
-    Map<String, Object> props = new HashMap<>();
-    props.put("test.redis.host", redis.getHost());
-    props.put("test.redis.port", redis.getFirstMappedPort());
-    context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("testProps", props));
     context.register(TestDataSourceConfig.class, TestRedisConfig.class);
     context.refresh();
 
