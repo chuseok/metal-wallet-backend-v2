@@ -3,8 +3,7 @@ package com.kb.wallet.ticket.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.kb.wallet.global.config.AppConfig;
-import com.kb.wallet.global.config.TestConfig;
-import com.kb.wallet.global.config.TestRedisConfig;
+import com.kb.wallet.global.config.RedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -30,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +49,8 @@ import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,8 +64,13 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+@ExtendWith(SpringExtension.class)
+@WebAppConfiguration
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
+@ContextConfiguration(initializers = TicketServiceConcurrencyTest.Initializer.class,
+    classes = {AppConfig.class, RedisConfig.class})
 @Tag("integration")
 class TicketServiceConcurrencyTest {
 
@@ -79,12 +86,19 @@ class TicketServiceConcurrencyTest {
   static RedissonClient redisson;
   static AnnotationConfigApplicationContext context;
 
+  @Autowired
   private TicketService ticketService;
+  @Autowired
   private MemberRepository memberRepository;
+  @Autowired
   private MusicalRepository musicalRepository;
+  @Autowired
   private ScheduleRepository scheduleRepository;
+  @Autowired
   private SectionRepository sectionRepository;
+  @Autowired
   private SeatRepository seatRepository;
+  @Autowired
   private TicketRepository ticketRepository;
 
   private Long testSeatId;
@@ -95,6 +109,31 @@ class TicketServiceConcurrencyTest {
   Section section;
   Schedule schedule;
   Musical musical;
+
+  static class Initializer implements
+      ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
+      // MySQL 연결 정보
+      String jdbcUrl = mysql.getJdbcUrl();
+      String username = mysql.getUsername();
+      String password = mysql.getPassword();
+
+      Properties props = new Properties();
+      props.put("spring.datasource.url", jdbcUrl);
+      props.put("spring.datasource.username", username);
+      props.put("spring.datasource.password", password);
+
+      // Redis 연결 정보
+      String redisHost = redis.getHost();
+      String redisPort = String.valueOf(redis.getFirstMappedPort());
+      props.put("spring.redis.host", redisHost);
+      props.put("spring.redis.port", redisPort);
+
+      context.getEnvironment().getPropertySources().addFirst(new org.springframework.core.env.PropertiesPropertySource("testProps", props));
+    }
+  }
 
   @BeforeEach
   void setUpBeforeEach() {
@@ -141,39 +180,7 @@ class TicketServiceConcurrencyTest {
 
   @BeforeAll
   void setUp() {
-    initTestcontainers();
     insertMemberData();
-  }
-
-  private void initTestcontainers() {
-    mysql.start();
-    redis.start();
-
-    System.setProperty("test.redis.host", redis.getHost());
-    System.setProperty("test.redis.port", String.valueOf(redis.getFirstMappedPort()));
-
-    System.setProperty("DATASOURCE_URL", mysql.getJdbcUrl());
-    System.setProperty("DATASOURCE_USERNAME", mysql.getUsername());
-    System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
-
-    context = new AnnotationConfigApplicationContext();
-    context.getEnvironment().setActiveProfiles("test");
-    context.register(TestRedisConfig.class);
-    context.register(TestConfig.class);
-    context.refresh();
-
-    redisson = context.getBean(RedissonClient.class);
-
-    ticketService = context.getBean(TicketService.class);
-    memberRepository = context.getBean(MemberRepository.class);
-    musicalRepository = context.getBean(MusicalRepository.class);
-    scheduleRepository = context.getBean(ScheduleRepository.class);
-    sectionRepository = context.getBean(SectionRepository.class);
-    seatRepository = context.getBean(SeatRepository.class);
-    ticketRepository = context.getBean(TicketRepository.class);
-
-    System.out.println("🔧 MySQL URL: " + mysql.getJdbcUrl());
-    System.out.println("🔧 Redis Host:Port " + redis.getHost() + ":" + redis.getFirstMappedPort());
   }
 
   @Transactional

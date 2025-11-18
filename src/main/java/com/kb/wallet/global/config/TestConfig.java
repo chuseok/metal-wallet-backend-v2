@@ -1,3 +1,4 @@
+/*
 package com.kb.wallet.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,10 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.Properties;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionFactoryBean;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,12 +15,9 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.transaction.ChainedTransactionManager;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -36,15 +30,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ComponentScan(basePackages = {
     "com.kb.wallet"
 })
-@MapperScan(
-    basePackages = {
-        "com.kb.wallet.member.repository",
-        "com.kb.wallet.ticket.repository",
-        "com.kb.wallet.seat.repository",
-        "com.kb.wallet.musical.repository"
-    },
-    annotationClass = org.apache.ibatis.annotations.Mapper.class //해당패키지에서 @Mapper어노테이션이 선언된 인터페이스 찾기
-)
 @EnableJpaRepositories(basePackages = {
     "com.kb.wallet.member.repository",
     "com.kb.wallet.ticket.repository",
@@ -106,11 +91,14 @@ public class TestConfig {
     return jpaTransactionManager;
   }
 
-  /*
+  */
+/*
    * sql 초기 데이터 세팅
    * 로컬에서 개발하며 테스트가 필요할 때만 활성화해서 사용할 것
-   */
-  /*@Bean
+   *//*
+
+  */
+/*@Bean
   public DataSourceInitializer dataSourceInitializer() {
     // HACK: db/data.sql 파일이 두 번 실행되는 문제 확인 및 수정 필요
     // 현재 DataSourceInitializer로 인해 중복 데이터 삽입이 발생하며,
@@ -131,5 +119,7 @@ public class TestConfig {
       // JPA 초기화가 완료된 후 DataSourceInitializer 실행
       initializer.afterPropertiesSet();
     };
-  }*/
+  }*//*
+
 }
+*/

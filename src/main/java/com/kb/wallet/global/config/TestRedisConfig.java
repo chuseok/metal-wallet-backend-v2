@@ -1,3 +1,4 @@
+/*
 package com.kb.wallet.global.config;
 
 
@@ -12,8 +13,8 @@ public class TestRedisConfig {
 
   @Bean
   public RedissonClient redissonClient() {
-    String host = System.getProperty("test.redis.host");
-    String port = System.getProperty("test.redis.port");
+    String host = System.getProperty("spring.redis.host");
+    String port = System.getProperty("spring.redis.port");
 
     Config config = new Config();
     config.useSingleServer()
@@ -22,3 +23,4 @@ public class TestRedisConfig {
     return Redisson.create(config);
   }
 }
+*/
