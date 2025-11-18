@@ -66,11 +66,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
+
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
-@ContextConfiguration(initializers = TicketServiceConcurrencyTest.Initializer.class,
-    classes = {AppConfig.class, RedisConfig.class})
+@ContextConfiguration(
+    classes = {AppConfig.class, RedisConfig.class},
+    initializers = TicketServiceConcurrencyTest.Initializer.class
+)
 @Tag("integration")
 class TicketServiceConcurrencyTest {
 
@@ -135,6 +138,7 @@ class TicketServiceConcurrencyTest {
       props.put("spring.redis.port", redisPort);
 
       context.getEnvironment().getPropertySources().addFirst(new org.springframework.core.env.PropertiesPropertySource("testProps", props));
+      context.getEnvironment().setActiveProfiles("test");
     }
   }
 
