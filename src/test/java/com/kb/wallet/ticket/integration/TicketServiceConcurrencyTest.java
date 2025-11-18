@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.kb.wallet.global.config.AppConfig;
 import com.kb.wallet.global.config.TestConfig;
+import com.kb.wallet.global.config.TestRedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -276,23 +277,6 @@ class TicketServiceConcurrencyTest {
     //then
     assertEquals(99, availableSeats, "가용 가능한 좌석 수는 99이여야 합니다.");
     assertEquals(1, ticketRepository.count(), "티켓 테이블에 단 1건의 데이터만 존재해야 합니다.");
-  }
-
-
-  @Configuration
-  public class TestRedisConfig {
-
-    @Bean
-    public RedissonClient redissonClient() {
-      String host = System.getProperty("test.redis.host");
-      String port = System.getProperty("test.redis.port");
-
-      Config config = new Config();
-      config.useSingleServer()
-          .setAddress("redis://" + host + ":" + port);
-
-      return Redisson.create(config);
-    }
   }
 
   /*@Test
