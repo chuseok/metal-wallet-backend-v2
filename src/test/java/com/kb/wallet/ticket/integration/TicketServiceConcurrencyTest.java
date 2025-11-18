@@ -1,6 +1,7 @@
 package com.kb.wallet.ticket.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.kb.wallet.global.config.AppConfig;
 import com.kb.wallet.global.config.RedisConfig;
@@ -17,8 +18,6 @@ import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.repository.*;
 import com.kb.wallet.ticket.service.TicketService;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -26,9 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -46,16 +43,11 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -87,8 +79,8 @@ class TicketServiceConcurrencyTest {
   static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
       .withExposedPorts(6379);
 
+  @Autowired
   static RedissonClient redisson;
-  static AnnotationConfigApplicationContext context;
 
   @Autowired
   private TicketService ticketService;
@@ -222,12 +214,16 @@ class TicketServiceConcurrencyTest {
   @AfterAll
   static void tearDown() {
     if (redisson != null) {
-      redisson.shutdown();
+      try {
+        redisson.shutdown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
   @Test
-  void testDatabaseConnection() throws Exception {
+  void testDatabaseConnection(ApplicationContext context) throws Exception {
     DataSource dataSource = context.getBean(DataSource.class);
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement();
@@ -290,6 +286,7 @@ class TicketServiceConcurrencyTest {
           System.err.println(result.getEmail() + ": "+ "Exception: " + result.getMessage());
       } catch (ExecutionException e) {
         System.err.println("ExecutionException: " + e.getMessage());
+        fail("Future threw exception: " + e.getMessage());
       }
     }
     System.out.println("successCount: " + successCount);
