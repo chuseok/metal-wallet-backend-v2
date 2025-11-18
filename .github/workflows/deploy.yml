@@ -89,12 +89,8 @@ jobs:
       PROFILE: ${{ needs.build.outputs.PROFILE }}
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-testcontainer-setting' && 'prod' }}
     steps:
-      - name: Check current directory
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Files here:"
-          ls -l
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Check workspace
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
