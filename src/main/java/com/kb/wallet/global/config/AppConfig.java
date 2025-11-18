@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @Import({DataSourceConfig.class, JpaConfig.class})
-@PropertySource("classpath:application-${profile:main}.properties")
+@PropertySource("classpath:application-${profile:prod}.properties")
 @ComponentScan(basePackages = {
     "com.kb.wallet"
 })
