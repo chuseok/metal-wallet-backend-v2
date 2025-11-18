@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: Build WAR
-        run: ./gradlew clean build --info -Dprofile=test
+        run: ./gradlew clean build --info
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
