@@ -3,6 +3,7 @@ package com.kb.wallet.ticket.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.kb.wallet.global.config.AppConfig;
+import com.kb.wallet.global.config.RedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -16,6 +17,11 @@ import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.repository.*;
 import com.kb.wallet.ticket.service.TicketService;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -26,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,19 +42,39 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppConfig.class)
 @WebAppConfiguration
 @ActiveProfiles("prod")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Testcontainers
 @Tag("integration")
 class TicketServiceConcurrencyTest {
+
+  @Container
+  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
+      .withUsername(System.getenv("TEST_MYSQL_USER"))
+      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
+  @Container
+  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
+      .withExposedPorts(6379);
+
+  static RedissonClient redisson;
+  static AnnotationConfigApplicationContext context;
 
   @Autowired
   private TicketService ticketService;
@@ -119,7 +146,29 @@ class TicketServiceConcurrencyTest {
 
   @BeforeAll
   void setUp() {
+    initTestcontainers();
     insertMemberData();
+  }
+
+  private void initTestcontainers() {
+    mysql.start();
+    redis.start();
+
+    System.setProperty("spring.redis.host", redis.getHost());
+    System.setProperty("spring.redis.port", String.valueOf(redis.getFirstMappedPort()));
+
+    System.setProperty("DATASOURCE_URL", mysql.getJdbcUrl());
+    System.setProperty("DATASOURCE_USERNAME", mysql.getUsername());
+    System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
+
+    context = new AnnotationConfigApplicationContext();
+    context.register(TestDataSourceConfig.class, RedisConfig.class);
+    context.refresh();
+
+    redisson = context.getBean(RedissonClient.class);
+
+    System.out.println("🔧 MySQL URL: " + mysql.getJdbcUrl());
+    System.out.println("🔧 Redis Host:Port " + redis.getHost() + ":" + redis.getFirstMappedPort());
   }
 
   @AfterEach
@@ -146,6 +195,42 @@ class TicketServiceConcurrencyTest {
           "password" + i,
           String.format("%06d", i)
       ));
+    }
+  }
+
+  @Test
+  void testDatabaseConnection() throws Exception {
+    DataSource dataSource = context.getBean(DataSource.class);
+    try (Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT 1")) {
+
+      while (rs.next()) {
+        System.out.println("DB Test Query Result: " + rs.getInt(1));
+      }
+    }
+  }
+
+  public static class TestDataSourceConfig {
+    @Bean
+    public DataSource dataSource() {
+      String url = System.getProperty("DATASOURCE_URL");
+      String log4jdbcUrl = url.replace(
+          "jdbc:mysql:",
+          "jdbc:log4jdbc:mysql:"
+      ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
+      String username = System.getProperty("DATASOURCE_USERNAME");
+      String password = System.getProperty("DATASOURCE_PASSWORD");
+
+      HikariConfig config = new HikariConfig();
+
+      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+      config.setJdbcUrl(log4jdbcUrl);
+      config.setUsername(username);
+      config.setPassword(password);
+      config.setMaximumPoolSize(5);
+      config.setMinimumIdle(1);
+      return new HikariDataSource(config);
     }
   }
 
