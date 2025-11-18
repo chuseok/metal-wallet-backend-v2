@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -205,7 +206,7 @@ class TicketServiceConcurrencyTest {
   }
 
   @AfterEach
-  void tearDown() {
+  void cleanUp() {
     ticketRepository.deleteAll();
   }
 
@@ -215,6 +216,13 @@ class TicketServiceConcurrencyTest {
     sectionRepository.deleteAll();
     scheduleRepository.deleteAll();
     musicalRepository.deleteAll();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    if (redisson != null) {
+      redisson.shutdown();
+    }
   }
 
   @Test
