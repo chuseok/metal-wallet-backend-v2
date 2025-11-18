@@ -168,8 +168,8 @@ class TicketServiceConcurrencyTest {
 
     context = new AnnotationConfigApplicationContext();
     Map<String, Object> props = new HashMap<>();
-    props.put("spring.redis.host", redis.getHost());
-    props.put("spring.redis.port", redis.getFirstMappedPort());
+    props.put("test.redis.host", redis.getHost());
+    props.put("test.redis.port", redis.getFirstMappedPort());
     context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("testProps", props));
     context.register(TestDataSourceConfig.class, TestRedisConfig.class);
     context.refresh();
@@ -310,8 +310,8 @@ class TicketServiceConcurrencyTest {
 
     @Bean
     public RedissonClient redissonClient() {
-      String host = System.getProperty("spring.redis.host");
-      String port = System.getProperty("spring.redis.port");
+      String host = System.getProperty("test.redis.host");
+      String port = System.getProperty("test.redis.port");
 
       Config config = new Config();
       config.useSingleServer()
