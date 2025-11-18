@@ -16,6 +16,8 @@ jobs:
       TEST_MYSQL_DB: ${{ secrets.TEST_MYSQL_DB }}
       TEST_MYSQL_USER: ${{ secrets.TEST_MYSQL_USER }}
       TEST_MYSQL_PASSWORD: ${{ secrets.TEST_MYSQL_PASSWORD }}
+    outputs:
+      PROFILE: ${{ steps.set-profile.outputs.profile }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
