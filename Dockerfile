@@ -5,7 +5,7 @@ FROM tomcat:9.0-jdk17
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Copy WAR file to ROOT.war
-ARG WAR_FILE=build/libs/metal-wallet-backend-1.0-SNAPSHOT.war
+ARG WAR_FILE
 COPY ${WAR_FILE} /usr/local/tomcat/webapps/ROOT.war
 
 # Expose port
