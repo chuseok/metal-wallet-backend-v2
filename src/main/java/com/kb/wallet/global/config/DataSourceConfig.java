@@ -5,11 +5,13 @@ import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
 @Configuration
 @Slf4j
@@ -25,22 +27,22 @@ public class DataSourceConfig {
    */
 
   @Value("${spring.datasource.hikari.minimum-idle}")
-  private static int minimumIdle;
+  private int minimumIdle;
 
   @Value("${spring.datasource.hikari.maximum-pool-size}")
-  private static int maximumPoolSize;
+  private int maximumPoolSize;
 
   @Value("${spring.datasource.hikari.connection-timeout}")
-  private static long connectionTimeout;
+  private long connectionTimeout;
 
   @Value("${spring.datasource.hikari.idle-timeout}")
-  private static long idleTimeout;
+  private long idleTimeout;
 
   @Value("${spring.datasource.hikari.max-lifetime}")
-  private static long maxLifetime;
+  private long maxLifetime;
 
   @Value("${spring.datasource.driver-class-name}")
-  private static String driverClassName;
+  private String driverClassName;
 
   @Configuration
   @Profile("dev")
@@ -83,18 +85,34 @@ public class DataSourceConfig {
   }
 
   @Configuration
-  public static class TestConfig {
+  @Profile("test")
+  @PropertySource("classpath:application-test.properties")
+  public static class TestDataSourceConfig {
+    @Autowired
+    private Environment env;
     @Bean
     public DataSource dataSource() {
-      String url = System.getProperty("DB_URL");
-      String username = System.getProperty("DB_USERNAME");
-      String password = System.getProperty("DB_PASSWORD");
+      String url = env.getProperty("spring.datasource.url");
+      String log4jdbcUrl = url.replace(
+          "jdbc:mysql:",
+          "jdbc:log4jdbc:mysql:"
+      ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
+      String username = env.getProperty("spring.datasource.username");
+      String password = env.getProperty("spring.datasource.password");
 
-      return createHikariDataSource(url, username, password);
+      HikariConfig config = new HikariConfig();
+
+      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+      config.setJdbcUrl(log4jdbcUrl);
+      config.setUsername(username);
+      config.setPassword(password);
+      config.setMaximumPoolSize(5);
+      config.setMinimumIdle(1);
+      return new HikariDataSource(config);
     }
   }
 
-  private static DataSource createHikariDataSource(String dbUrl,
+  private DataSource createHikariDataSource(String dbUrl,
       String dbUsername, String dbPassword) {
     HikariConfig config = new HikariConfig();
     config.setDriverClassName(driverClassName);

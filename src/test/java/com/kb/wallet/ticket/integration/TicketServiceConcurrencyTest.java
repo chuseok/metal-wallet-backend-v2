@@ -1,8 +1,10 @@
 package com.kb.wallet.ticket.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.kb.wallet.global.config.AppConfig;
+import com.kb.wallet.global.config.RedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -16,17 +18,23 @@ import com.kb.wallet.ticket.domain.*;
 import com.kb.wallet.ticket.dto.request.TicketRequest;
 import com.kb.wallet.ticket.repository.*;
 import com.kb.wallet.ticket.service.TicketService;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javax.sql.DataSource;
 import javax.transaction.Transactional;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,38 +43,57 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = AppConfig.class)
 @WebAppConfiguration
-@ActiveProfiles("prod")
+
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Testcontainers
+@ContextConfiguration(
+    classes = {AppConfig.class, RedisConfig.class},
+    initializers = TicketServiceConcurrencyTest.Initializer.class
+)
 @Tag("integration")
 class TicketServiceConcurrencyTest {
 
+  @Container
+  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
+      .withUsername(System.getenv("TEST_MYSQL_USER"))
+      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
+  @Container
+  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
+      .withExposedPorts(6379);
+
+  @Autowired
+  static RedissonClient redisson;
+
   @Autowired
   private TicketService ticketService;
-
   @Autowired
   private MemberRepository memberRepository;
-
   @Autowired
   private MusicalRepository musicalRepository;
-
   @Autowired
   private ScheduleRepository scheduleRepository;
-
   @Autowired
   private SectionRepository sectionRepository;
-
   @Autowired
   private SeatRepository seatRepository;
-
   @Autowired
   private TicketRepository ticketRepository;
 
@@ -79,9 +106,44 @@ class TicketServiceConcurrencyTest {
   Schedule schedule;
   Musical musical;
 
+  static class Initializer implements
+      ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
+      context.getEnvironment().setActiveProfiles("test");
+      System.setProperty("profile", "test");
+
+      mysql.start();
+      redis.start();
+
+      String jdbcUrl = mysql.getJdbcUrl();
+      String username = mysql.getUsername();
+      String password = mysql.getPassword();
+
+      Properties props = new Properties();
+      props.put("spring.datasource.url", jdbcUrl);
+      props.put("spring.datasource.username", username);
+      props.put("spring.datasource.password", password);
+
+
+      String redisHost = redis.getHost();
+      String redisPort = String.valueOf(redis.getFirstMappedPort());
+      props.put("spring.redis.host", redisHost);
+      props.put("spring.redis.port", redisPort);
+
+      context.getEnvironment().getPropertySources().addFirst(new org.springframework.core.env.PropertiesPropertySource("testProps", props));
+    }
+  }
+
   @BeforeEach
   void setUpBeforeEach() {
     cleanUpAll();
+    createTestMusicalScheduleSection();
+
+  }
+
+  private void createTestMusicalScheduleSection() {
     musical = musicalRepository.save(new Musical(
         1L,
         "킹키부츠",
@@ -122,19 +184,6 @@ class TicketServiceConcurrencyTest {
     insertMemberData();
   }
 
-  @AfterEach
-  void tearDown() {
-    ticketRepository.deleteAll();
-  }
-
-  void cleanUpAll() {
-    ticketRepository.deleteAll();
-    seatRepository.deleteAll();
-    sectionRepository.deleteAll();
-    scheduleRepository.deleteAll();
-    musicalRepository.deleteAll();
-  }
-
   @Transactional
   void insertMemberData() {
     for (int i = 1; i <= testMemberCnt; i++) {
@@ -146,6 +195,43 @@ class TicketServiceConcurrencyTest {
           "password" + i,
           String.format("%06d", i)
       ));
+    }
+  }
+
+  @AfterEach
+  void cleanUp() {
+    ticketRepository.deleteAll();
+  }
+
+  void cleanUpAll() {
+    ticketRepository.deleteAll();
+    seatRepository.deleteAll();
+    sectionRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    musicalRepository.deleteAll();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    if (redisson != null) {
+      try {
+        redisson.shutdown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  @Test
+  void testDatabaseConnection(ApplicationContext context) throws Exception {
+    DataSource dataSource = context.getBean(DataSource.class);
+    try (Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT 1")) {
+
+      while (rs.next()) {
+        System.out.println("DB Test Query Result: " + rs.getInt(1));
+      }
     }
   }
 
@@ -200,6 +286,7 @@ class TicketServiceConcurrencyTest {
           System.err.println(result.getEmail() + ": "+ "Exception: " + result.getMessage());
       } catch (ExecutionException e) {
         System.err.println("ExecutionException: " + e.getMessage());
+        fail("Future threw exception: " + e.getMessage());
       }
     }
     System.out.println("successCount: " + successCount);

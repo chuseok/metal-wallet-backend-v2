@@ -1,28 +1,24 @@
 package com.kb.wallet.ticket.integration;
 
-import com.kb.wallet.global.config.DataSourceConfig;
+import com.kb.wallet.global.config.RedisConfig;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { DataSourceConfig.TestConfig.class })
 @Testcontainers
-@Tag("integration")
+//@Tag("integration")
 public class TestContainersTest {
   @Container
   static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
@@ -34,6 +30,7 @@ public class TestContainersTest {
       .withExposedPorts(6379);
 
   static RedissonClient redisson;
+  static AnnotationConfigApplicationContext context;
 
   @BeforeAll
   static void setUp() {
@@ -43,24 +40,29 @@ public class TestContainersTest {
     String redisHost = redis.getHost();
     int redisPort = redis.getFirstMappedPort();
 
-    System.setProperty("REDIS_HOST", redisHost);
-    System.setProperty("REDIS_PORT", String.valueOf(redisPort));
+    System.setProperty("spring.redis.host", redisHost);
+    System.setProperty("spring.redis.port", String.valueOf(redisPort));
 
     // DB connection properties
-    System.setProperty("DB_URL", mysql.getJdbcUrl());
-    System.setProperty("DB_USERNAME", mysql.getUsername());
-    System.setProperty("DB_PASSWORD", mysql.getPassword());
+    System.setProperty("DATASOURCE_URL", mysql.getJdbcUrl());
+    System.setProperty("DATASOURCE_USERNAME", mysql.getUsername());
+    System.setProperty("DATASOURCE_PASSWORD", mysql.getPassword());
 
-    Config config = new Config();
-    config.useSingleServer()
-        .setAddress("redis://" + redisHost + ":" + redisPort);
-    redisson = Redisson.create(config);
+    context = new AnnotationConfigApplicationContext();
+
+    context.register(TestDataSourceConfig.class);
+    context.register(RedisConfig.class);
+
+    context.refresh();
+
+    redisson = context.getBean(RedissonClient.class);
 
     System.out.println("✅ TestContainers MySQL URL: " + mysql.getJdbcUrl());
     System.out.println("✅ TestContainers Redis Host:Port " + redisHost + ":" + redisPort);
   }
   @Test
-  void testDatabaseConnection(DataSource dataSource) throws Exception {
+  void testDatabaseConnection() throws Exception {
+    DataSource dataSource = context.getBean(DataSource.class);
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT 1")) {
@@ -68,6 +70,29 @@ public class TestContainersTest {
       while (rs.next()) {
         System.out.println("DB Test Query Result: " + rs.getInt(1));
       }
+    }
+  }
+
+  public static class TestDataSourceConfig {
+    @Bean
+    public DataSource dataSource() {
+      String url = System.getProperty("DATASOURCE_URL");
+      String log4jdbcUrl = url.replace(
+          "jdbc:mysql:",
+          "jdbc:log4jdbc:mysql:"
+      ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
+      String username = System.getProperty("DATASOURCE_USERNAME");
+      String password = System.getProperty("DATASOURCE_PASSWORD");
+
+      HikariConfig config = new HikariConfig();
+
+      config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+      config.setJdbcUrl(log4jdbcUrl);
+      config.setUsername(username);
+      config.setPassword(password);
+      config.setMaximumPoolSize(5);
+      config.setMinimumIdle(1);
+      return new HikariDataSource(config);
     }
   }
 }
