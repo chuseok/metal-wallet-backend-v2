@@ -30,7 +30,7 @@ import org.springframework.web.filter.CorsFilter;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@ComponentScan(basePackages = {"com.kb.wallet.member", "com.kb.wallet.jwt"})
+@ComponentScan(basePackages = {"com.kb.wallet.member", "com.kb.wallet.jwt", "com.kb.wallet.jwt"})
 public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
@@ -69,7 +69,7 @@ public class SecurityConfig {
   public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
 
     http
-        .antMatcher("/prometheus/**")
+        .antMatcher("/api/prometheus/**")
         .authorizeRequests()
         .anyRequest().authenticated()
         .and()
