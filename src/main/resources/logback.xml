@@ -12,7 +12,14 @@
 
     <!-- 파일 출력 설정 -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>c:\\myapp.log</file>
+        <file>/home/ubuntu/logs/app.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRorntjdllingPolicy">
+            <fileNamePattern>/home/ubuntu/logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
@@ -21,10 +28,14 @@
         <level value="info"/>
     </logger>
 
-    <!-- 루트 로거 설정 -->
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
-<!--        <appender-ref ref="FILE"/>-->
-    </root>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
 
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
 </configuration>

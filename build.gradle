@@ -127,6 +127,13 @@ dependencies {
 
     // Spring AOP
     implementation 'org.springframework:spring-aop:5.3.30'
+
+    //aws cloudwatch
+//    implementation 'ca.pjer:logback-awslogs-appender:1.6.0'
+
+    //prometheus
+    implementation 'io.micrometer:micrometer-core:1.12.5'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.12.5'
 }
 
 test {
