@@ -15,9 +15,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -34,8 +36,6 @@ public class SecurityConfig {
   private String frontendUrl;
   private final TokenProvider tokenProvider;
   private final UserDetailsService userDetailsService;
-
-  // 비밀번호 암호화
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -67,6 +67,7 @@ public class SecurityConfig {
   @Bean
   @Order(1)
   public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
+
     http
         .antMatcher("/prometheus/**")
         .authorizeRequests()
@@ -76,7 +77,21 @@ public class SecurityConfig {
         .and()
         .csrf().disable()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
     return http.build();
+  }
+
+  @Bean
+  public UserDetailsService userDetailsService() {
+    String prometheusUser = System.getenv("PROMETHEUS_USER");
+    String prometheusPassword = System.getenv("PROMETHEUS_PASSWORD");
+
+    return new InMemoryUserDetailsManager(
+        User.withUsername(prometheusUser)
+            .password(passwordEncoder().encode(prometheusPassword))
+            .roles("PROMETHEUS")
+            .build()
+    );
   }
 
   // 요청 경로에 대한 인증 및 인가 규칙을 정의
