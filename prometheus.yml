@@ -4,5 +4,8 @@ global:
 scrape_configs:
   - job_name: 'myapp-prod'
     metrics_path: '/prometheus'
+    basic_auth:
+      username: ${PROMETHEUS_USER}
+      password: ${PROMETHEUS_PASSWORD}
     static_configs:
       - targets: ['myapp-prod:8080']

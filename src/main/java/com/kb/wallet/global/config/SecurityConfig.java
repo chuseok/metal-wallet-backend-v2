@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -63,9 +64,25 @@ public class SecurityConfig {
     return new CorsFilter(source);
   }
 
+  @Bean
+  @Order(1)
+  public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
+    http
+        .antMatcher("/prometheus/**")
+        .authorizeRequests()
+        .anyRequest().authenticated()
+        .and()
+        .httpBasic()
+        .and()
+        .csrf().disable()
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    return http.build();
+  }
+
   // 요청 경로에 대한 인증 및 인가 규칙을 정의
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  @Order(2)
+  public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
