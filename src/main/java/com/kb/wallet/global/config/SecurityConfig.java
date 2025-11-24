@@ -4,6 +4,7 @@ package com.kb.wallet.global.config;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -66,9 +67,16 @@ public class SecurityConfig {
 
   @Bean
   @Order(1)
-  public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain prometheusFilterChain(HttpSecurity http,
+      @Qualifier("prometheusUserDetailsService") UserDetailsService prometheusUserDetailsService) throws Exception {
+    AuthenticationManager authManager = http.getSharedObject(AuthenticationManagerBuilder.class)
+        .userDetailsService(prometheusUserDetailsService)
+        .passwordEncoder(passwordEncoder())
+        .and()
+        .build();
 
     http
+        .authenticationManager(authManager)
         .antMatcher("/api/prometheus/**")
         .authorizeRequests()
         .anyRequest().authenticated()
@@ -81,8 +89,8 @@ public class SecurityConfig {
     return http.build();
   }
 
-  @Bean
-  public UserDetailsService userDetailsService() {
+  @Bean("prometheusUserDetailsService")
+  public UserDetailsService prometheusUserDetailsService() {
     String prometheusUser = System.getenv("PROMETHEUS_USER");
     String prometheusPassword = System.getenv("PROMETHEUS_PASSWORD");
 
