@@ -30,7 +30,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@PropertySource("classpath:application-${spring.profiles.active:prod}.properties")
+@PropertySource(value = "classpath:application-prod.properties")
 @ComponentScan(basePackages = {
     "com.kb.wallet"
 })
