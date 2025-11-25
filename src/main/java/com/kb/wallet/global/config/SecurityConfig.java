@@ -37,6 +37,7 @@ public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
   private final TokenProvider tokenProvider;
+  @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
