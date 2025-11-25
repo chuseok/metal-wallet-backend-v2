@@ -111,8 +111,8 @@ class TicketServiceConcurrencyTest {
 
     @Override
     public void initialize(ConfigurableApplicationContext context) {
-      context.getEnvironment().setActiveProfiles("test");
-      System.setProperty("profile", "test");
+//      context.getEnvironment().setActiveProfiles("test");
+//      System.setProperty("profile", "test");
 
       mysql.start();
       redis.start();
