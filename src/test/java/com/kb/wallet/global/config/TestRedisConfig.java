@@ -14,12 +14,16 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 @Configuration
 @EnableCaching
-@Profile("prod")
-public class RedisConfig {
-
+@Profile("test")
+public class TestRedisConfig {
+    @Container
+  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
+      .withExposedPorts(6379);
   @Value("${spring.redis.host}")
   private String host;
 

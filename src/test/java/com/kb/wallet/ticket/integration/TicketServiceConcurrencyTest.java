@@ -4,7 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.kb.wallet.global.config.AppConfig;
-import com.kb.wallet.global.config.RedisConfig;
+import com.kb.wallet.global.config.TestDatabaseConfig;
+import com.kb.wallet.global.config.TestRedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -64,20 +65,24 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
 @ContextConfiguration(
-    classes = {AppConfig.class, RedisConfig.class},
-    initializers = TicketServiceConcurrencyTest.Initializer.class
+    classes = {
+        AppConfig.class,
+        TestDatabaseConfig.class,
+        TestRedisConfig.class
+    }
+//    , initializers = TicketServiceConcurrencyTest.Initializer.class
 )
 @Tag("integration")
 class TicketServiceConcurrencyTest {
 
-  @Container
-  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
-      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
-      .withUsername(System.getenv("TEST_MYSQL_USER"))
-      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
-  @Container
-  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
-      .withExposedPorts(6379);
+//  @Container
+//  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+//      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
+//      .withUsername(System.getenv("TEST_MYSQL_USER"))
+//      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
+//  @Container
+//  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
+//      .withExposedPorts(6379);
 
   @Autowired
   static RedissonClient redisson;
@@ -106,13 +111,12 @@ class TicketServiceConcurrencyTest {
   Schedule schedule;
   Musical musical;
 
-  static class Initializer implements
+  /*static class Initializer implements
       ApplicationContextInitializer<ConfigurableApplicationContext> {
-
     @Override
     public void initialize(ConfigurableApplicationContext context) {
-//      context.getEnvironment().setActiveProfiles("test");
-//      System.setProperty("profile", "test");
+      context.getEnvironment().setActiveProfiles("test");
+      System.setProperty("profile", "test");
 
       mysql.start();
       redis.start();
@@ -134,7 +138,7 @@ class TicketServiceConcurrencyTest {
 
       context.getEnvironment().getPropertySources().addFirst(new org.springframework.core.env.PropertiesPropertySource("testProps", props));
     }
-  }
+  }*/
 
   @BeforeEach
   void setUpBeforeEach() {
