@@ -87,7 +87,7 @@ public class DataSourceConfig {
   @Configuration
   @Profile("test")
   @PropertySource("classpath:application-test.properties")
-  public static class TestDataSourceConfig {
+  class TestDataSourceConfig {
     @Autowired
     private Environment env;
     @Bean
