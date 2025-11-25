@@ -19,11 +19,12 @@ public class TestDatabaseConfig {
   public DataSource dataSource() {
     String url = env.getProperty("spring.datasource.url");
     String log4jdbcUrl = url.replace("jdbc:mysql:", "jdbc:log4jdbc:mysql:");
+    log4jdbcUrl += "&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul";
     String username = env.getProperty("spring.datasource.username");
     String password = env.getProperty("spring.datasource.password");
 
     HikariConfig config = new HikariConfig();
-    config.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
+    config.setDriverClassName("com.mysql.cj.jdbc.Driver");
     config.setJdbcUrl(log4jdbcUrl);
     config.setUsername(username);
     config.setPassword(password);
