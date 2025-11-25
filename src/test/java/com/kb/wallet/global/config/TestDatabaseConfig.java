@@ -18,6 +18,8 @@ public class TestDatabaseConfig {
   @Bean
   public DataSource dataSource() {
     String url = env.getProperty("spring.datasource.url");
+    System.out.println("getProperty url: ");
+    System.out.println(url);
     String log4jdbcUrl = url.replace(
         "jdbc:mysql:",
         "jdbc:log4jdbc:mysql:"
