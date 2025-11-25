@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,14 +37,24 @@ public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
   private final TokenProvider tokenProvider;
-  private final UserDetailsService userDetailsService;
-  @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
   @Bean
-  public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+  public UserDetailsService userDetailsService() {
+    String prometheusUser = System.getenv("PROMETHEUS_USER");
+    String prometheusPassword = System.getenv("PROMETHEUS_PASSWORD");
+    UserDetails prometheus = User.withUsername(prometheusUser)
+        .password(passwordEncoder().encode(prometheusPassword))
+        .roles("PROMETHEUS")
+        .build();
+
+    return new InMemoryUserDetailsManager(prometheus);
+  }
+
+  @Bean
+  public AuthenticationManager authManager(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
     AuthenticationManagerBuilder authenticationManagerBuilder =
         http.getSharedObject(AuthenticationManagerBuilder.class);
     // UserDetailsService와 PasswordEncoder를 설정
@@ -67,17 +78,10 @@ public class SecurityConfig {
 
   @Bean
   @Order(1)
-  public SecurityFilterChain prometheusFilterChain(HttpSecurity http,
-      @Qualifier("prometheusUserDetailsService") UserDetailsService prometheusUserDetailsService) throws Exception {
-    AuthenticationManager authManager = http.getSharedObject(AuthenticationManagerBuilder.class)
-        .userDetailsService(prometheusUserDetailsService)
-        .passwordEncoder(passwordEncoder())
-        .and()
-        .build();
-
+  public SecurityFilterChain prometheusFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception {
     http
-        .authenticationManager(authManager)
         .antMatcher("/api/prometheus/**")
+        .authenticationManager(authManager)
         .authorizeRequests()
         .anyRequest().authenticated()
         .and()
@@ -87,19 +91,6 @@ public class SecurityConfig {
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
     return http.build();
-  }
-
-  @Bean("prometheusUserDetailsService")
-  public UserDetailsService prometheusUserDetailsService() {
-    String prometheusUser = System.getenv("PROMETHEUS_USER");
-    String prometheusPassword = System.getenv("PROMETHEUS_PASSWORD");
-
-    return new InMemoryUserDetailsManager(
-        User.withUsername(prometheusUser)
-            .password(passwordEncoder().encode(prometheusPassword))
-            .roles("PROMETHEUS")
-            .build()
-    );
   }
 
   // 요청 경로에 대한 인증 및 인가 규칙을 정의
