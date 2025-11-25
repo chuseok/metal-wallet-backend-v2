@@ -17,27 +17,23 @@ public class TestDatabaseConfig {
   @Autowired
   private Environment env;
 
-  @Container
-  private static final MySQLContainer<?> mysql =
-      new MySQLContainer<>("mysql:8.0")
-          .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
-          .withUsername(System.getenv("TEST_MYSQL_USER"))
-          .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
-
   @Bean
   public DataSource dataSource() {
-    String url = mysql.getJdbcUrl();
+    String url = env.getProperty("spring.datasource.url");
     String log4jdbcUrl = url.replace(
         "jdbc:mysql:",
         "jdbc:log4jdbc:mysql:"
     ) + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true";
+    String username = env.getProperty("spring.datasource.username");
+    String password = env.getProperty("spring.datasource.password");
 
     return new HikariDataSource(
-        new HikariConfig() {{
+
+    new HikariConfig() {{
           setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
           setJdbcUrl(log4jdbcUrl);
-          setUsername(mysql.getUsername());
-          setPassword(mysql.getPassword());
+          setUsername(username);
+          setPassword(password);
           setMaximumPoolSize(5);
           setMinimumIdle(1);
         }}

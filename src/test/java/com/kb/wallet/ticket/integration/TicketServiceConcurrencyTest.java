@@ -67,24 +67,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @ContextConfiguration(
     classes = {
-        AppConfig.class,
         TestDatabaseConfig.class,
+        AppConfig.class,
         TestRedisConfig.class
     }
-//    , initializers = TicketServiceConcurrencyTest.Initializer.class
+    , initializers = TicketServiceConcurrencyTest.Initializer.class
 )
 @Tag("integration")
 class TicketServiceConcurrencyTest {
-
-//  @Container
-//  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
-//      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
-//      .withUsername(System.getenv("TEST_MYSQL_USER"))
-//      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
-//  @Container
-//  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
-//      .withExposedPorts(6379);
-
   @Autowired
   static RedissonClient redisson;
 
@@ -112,13 +102,19 @@ class TicketServiceConcurrencyTest {
   Schedule schedule;
   Musical musical;
 
-  /*static class Initializer implements
+  @Container
+  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
+      .withUsername(System.getenv("TEST_MYSQL_USER"))
+      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
+  @Container
+  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
+      .withExposedPorts(6379);
+
+  static class Initializer implements
       ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Override
     public void initialize(ConfigurableApplicationContext context) {
-      context.getEnvironment().setActiveProfiles("test");
-      System.setProperty("profile", "test");
-
       mysql.start();
       redis.start();
 
@@ -139,7 +135,7 @@ class TicketServiceConcurrencyTest {
 
       context.getEnvironment().getPropertySources().addFirst(new org.springframework.core.env.PropertiesPropertySource("testProps", props));
     }
-  }*/
+  }
 
   @BeforeEach
   void setUpBeforeEach() {
