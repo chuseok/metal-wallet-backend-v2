@@ -106,7 +106,12 @@ class TicketServiceConcurrencyTest {
   static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
       .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
       .withUsername(System.getenv("TEST_MYSQL_USER"))
-      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
+      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"))
+      .withUrlParam("useSSL", "false")
+      .withUrlParam("allowPublicKeyRetrieval", "true")
+      .withUrlParam("serverTimezone", "Asia/Seoul")
+      .withUrlParam("characterEncoding", "UTF-8")
+      .withUrlParam("useUnicode", "true");
   @Container
   static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
       .withExposedPorts(6379);

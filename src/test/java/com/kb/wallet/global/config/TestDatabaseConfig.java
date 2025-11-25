@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 @Configuration
 @Profile("test")
@@ -21,7 +19,6 @@ public class TestDatabaseConfig {
   public DataSource dataSource() {
     String url = env.getProperty("spring.datasource.url");
     String log4jdbcUrl = url.replace("jdbc:mysql:", "jdbc:log4jdbc:mysql:");
-    log4jdbcUrl += "&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul";
     String username = env.getProperty("spring.datasource.username");
     String password = env.getProperty("spring.datasource.password");
 
