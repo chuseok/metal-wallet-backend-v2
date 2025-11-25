@@ -51,6 +51,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.testcontainers.containers.GenericContainer;
@@ -60,8 +61,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-
 @ActiveProfiles("test")
+@TestPropertySource(properties = "spring.profiles.active=test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
 @ContextConfiguration(
