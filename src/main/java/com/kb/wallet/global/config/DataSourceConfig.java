@@ -11,7 +11,7 @@ import org.springframework.context.annotation.PropertySource;
 
 @Configuration
 @Slf4j
-@PropertySource("classpath:application.properties") // 공통 설정 파일
+@PropertySource("classpath:application-prod.properties")
 public class DataSourceConfig {
 
   @Value("${spring.datasource.hikari.minimum-idle}")
