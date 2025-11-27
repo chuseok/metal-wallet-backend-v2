@@ -54,6 +54,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -115,6 +116,9 @@ class TicketServiceConcurrencyTest {
       ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Override
     public void initialize(ConfigurableApplicationContext context) {
+      AnnotationConfigWebApplicationContext testContext = new AnnotationConfigWebApplicationContext();
+      testContext.getEnvironment().setActiveProfiles("test");
+
       mysql.start();
       redis.start();
 
