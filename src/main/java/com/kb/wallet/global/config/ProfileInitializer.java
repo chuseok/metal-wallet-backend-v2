@@ -10,7 +10,7 @@ public class ProfileInitializer implements
 
   @Override
   public void initialize(ConfigurableApplicationContext applicationContext) {
-    applicationContext.getEnvironment().setActiveProfiles("prod");  // refresh 전에 적용됨
+//    applicationContext.getEnvironment().setActiveProfiles("prod");  // refresh 전에 적용됨
 
 
     String[] activeProfiles = applicationContext.getEnvironment().getActiveProfiles();

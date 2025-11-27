@@ -31,7 +31,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@DependsOn("dataSource")
+//@DependsOn("dataSource")
 @PropertySource(value = "classpath:application-prod.properties")
 @ComponentScan(basePackages = {
     "com.kb.wallet"

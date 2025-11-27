@@ -62,8 +62,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-@ActiveProfiles("test")
-@TestPropertySource(properties = "spring.profiles.active=test")
+//@TestPropertySource(properties = "spring.profiles.active=test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
 @ContextConfiguration(
