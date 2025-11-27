@@ -2,6 +2,8 @@ package com.kb.wallet.global.config;
 
 
 import javax.servlet.Filter;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -34,11 +36,10 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     return new String[]{"/"};
   }
 
-//  @Override
-//  public void onStartup(ServletContext servletContext) throws ServletException {
-//    super.onStartup(servletContext);
-//
-//    servletContext.addListener(new ProfileInitializer());
-//  }
+  @Override
+  public void onStartup(ServletContext servletContext) throws ServletException {
+    servletContext.setInitParameter("contextInitializerClasses",
+        "com.kb.wallet.global.config.ProfileInitializer");
+    super.onStartup(servletContext);
+  }
 }
-
