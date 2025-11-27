@@ -1,6 +1,6 @@
 package com.kb.wallet.ticket.integration;
 
-import com.kb.wallet.global.config.RedisConfig;
+import com.kb.wallet.global.config.TestRedisConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
@@ -51,7 +51,7 @@ public class TestContainersTest {
     context = new AnnotationConfigApplicationContext();
 
     context.register(TestDataSourceConfig.class);
-    context.register(RedisConfig.class);
+    context.register(TestRedisConfig.class);
 
     context.refresh();
 

@@ -6,12 +6,12 @@ on:
       - main
       - develop
       - test
-      - feature/8-loadtest
+      - fix/10-testcontainers-setting
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/feature/8-loadtest' && 'prod' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/fix/10-testcontainers-setting' && 'prod' }}
     env:
       TEST_MYSQL_DB: ${{ secrets.TEST_MYSQL_DB }}
       TEST_MYSQL_USER: ${{ secrets.TEST_MYSQL_USER }}
@@ -36,7 +36,7 @@ jobs:
       - name: Set PROFILE based on branch
         id: set-profile
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]] || [[ "${GITHUB_REF_NAME}" == "feature/8-loadtest" ]]; then
+          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]] || [[ "${GITHUB_REF_NAME}" == "fix/10-testcontainers-setting" ]]; then
             echo "PROFILE=prod" >> $GITHUB_ENV
             echo "profile=prod" >> $GITHUB_OUTPUT
           else
@@ -89,7 +89,7 @@ jobs:
     needs: build
     env:
       PROFILE: ${{ needs.build.outputs.PROFILE }}
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/feature/8-loadtest' && 'prod' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/fix/10-testcontainers-setting' && 'prod' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

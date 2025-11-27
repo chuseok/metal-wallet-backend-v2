@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -31,8 +31,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@Import({DataSourceConfig.class, JpaConfig.class})
-@PropertySource("classpath:application-${profile:prod}.properties")
+//@DependsOn("dataSource")
+@PropertySource(value = "classpath:application-prod.properties")
 @ComponentScan(basePackages = {
     "com.kb.wallet"
 })
@@ -58,10 +58,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @RequiredArgsConstructor
 @EnableAspectJAutoProxy
 public class AppConfig {
-
   private final DataSource dataSource;
   private final Properties jpaProperties;
-
   @Bean
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
