@@ -16,7 +16,6 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>/usr/local/tomcat/logs/app.log.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
 
