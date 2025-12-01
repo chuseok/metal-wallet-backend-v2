@@ -36,7 +36,6 @@ public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
   private final TokenProvider tokenProvider;
-  private final UserDetailsService userDetailsService;
 
   // 비밀번호 암호화
   @Bean
