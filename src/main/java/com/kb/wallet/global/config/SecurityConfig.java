@@ -44,9 +44,9 @@ public class SecurityConfig {
   }
 
   @Bean
-  public UserDetailsService userDetailsService() {
-    String prometheusUser = System.getenv("PROMETHEUS_USER");
-    String prometheusPassword = System.getenv("PROMETHEUS_PASSWORD");
+  public UserDetailsService userDetailsService(
+      @Value("${prometheus.user}") String prometheusUser,
+      @Value("${prometheus.password}") String prometheusPassword) {
     UserDetails prometheus = User.withUsername(prometheusUser)
         .password(passwordEncoder().encode(prometheusPassword))
         .roles("PROMETHEUS")
