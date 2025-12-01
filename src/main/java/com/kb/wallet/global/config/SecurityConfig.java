@@ -8,15 +8,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -41,7 +45,19 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+  public UserDetailsService userDetailsService() {
+    String prometheusUser = System.getenv("PROMETHEUS_USER");
+    String prometheusPassword = System.getenv("PROMETHEUS_PASSWORD");
+    UserDetails prometheus = User.withUsername(prometheusUser)
+        .password(passwordEncoder().encode(prometheusPassword))
+        .roles("PROMETHEUS")
+        .build();
+
+    return new InMemoryUserDetailsManager(prometheus);
+  }
+
+  @Bean
+  public AuthenticationManager authManager(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
     AuthenticationManagerBuilder authenticationManagerBuilder =
         http.getSharedObject(AuthenticationManagerBuilder.class);
     // UserDetailsService와 PasswordEncoder를 설정
@@ -63,9 +79,27 @@ public class SecurityConfig {
     return new CorsFilter(source);
   }
 
+  @Bean
+  @Order(1)
+  public SecurityFilterChain prometheusFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception {
+    http
+        .antMatcher("/api/prometheus/**")
+        .authenticationManager(authManager)
+        .authorizeRequests()
+        .anyRequest().authenticated()
+        .and()
+        .httpBasic()
+        .and()
+        .csrf().disable()
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+    return http.build();
+  }
+
   // 요청 경로에 대한 인증 및 인가 규칙을 정의
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  @Order(2)
+  public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
