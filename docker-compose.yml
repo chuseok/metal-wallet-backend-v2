@@ -12,6 +12,8 @@ services:
       - "8080:8080"
     depends_on:
       - redis
+    volumes:
+      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
     networks:
