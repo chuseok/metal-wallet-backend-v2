@@ -2,6 +2,9 @@ package com.kb.wallet.global.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,8 +47,14 @@ public class DataSourceConfig {
   private String datasourcePassword;
 
   @Bean
-  public DataSource dataSource() {
-    return createHikariDataSource(datasourceUrl, datasourceUsername, datasourcePassword);
+  public DataSource dataSource(MeterRegistry registry) {
+    HikariDataSource ds = (HikariDataSource) createHikariDataSource(
+        datasourceUrl, datasourceUsername, datasourcePassword
+    );
+
+    ds.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
+
+    return ds;
   }
 
   private DataSource createHikariDataSource(String dbUrl,
