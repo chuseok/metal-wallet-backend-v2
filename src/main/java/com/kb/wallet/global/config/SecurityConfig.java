@@ -4,6 +4,7 @@ package com.kb.wallet.global.config;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,7 @@ import org.springframework.web.filter.CorsFilter;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ComponentScan(basePackages = {"com.kb.wallet.member", "com.kb.wallet.jwt"})
 @PropertySource("classpath:application-prod.properties")
+@Slf4j
 public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
@@ -53,6 +55,10 @@ public class SecurityConfig {
   public UserDetailsService userDetailsService() {
     String prometheusUser = env.getProperty("prometheus.user", "admin");
     String prometheusPassword = env.getProperty("prometheus.password", "12345678");
+
+    log.info("prometheus: initialization prometheus");
+    log.info("prometheus user: {}", String.join(", ", prometheusUser));
+    log.info("prometheus passwd: {}", String.join(", ", prometheusPassword));
 
     UserDetails prometheus = User.withUsername(prometheusUser)
         .password(passwordEncoder().encode(prometheusPassword))
