@@ -5,8 +5,8 @@ scrape_configs:
   - job_name: 'spring_app'
     metrics_path: '/api/prometheus'
     basic_auth:
-      username: ${PROMETHEUS_USER}
-      password: ${PROMETHEUS_PASSWORD}
+      username: admin
+      password: 12345678
     static_configs:
       - targets: ['172.31.38.30:8080']
 
