@@ -4,12 +4,14 @@ package com.kb.wallet.global.config;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -38,6 +40,8 @@ public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
   private final TokenProvider tokenProvider;
+  @Autowired
+  Environment env;
 
   // 비밀번호 암호화
   @Bean
@@ -46,9 +50,10 @@ public class SecurityConfig {
   }
 
   @Bean
-  public UserDetailsService userDetailsService(
-      @Value("${prometheus.user}") String prometheusUser,
-      @Value("${prometheus.password}") String prometheusPassword) {
+  public UserDetailsService userDetailsService() {
+    String prometheusUser = env.getProperty("prometheus.user", "admin");
+    String prometheusPassword = env.getProperty("prometheus.password", "12345678");
+
     UserDetails prometheus = User.withUsername(prometheusUser)
         .password(passwordEncoder().encode(prometheusPassword))
         .roles("PROMETHEUS")
