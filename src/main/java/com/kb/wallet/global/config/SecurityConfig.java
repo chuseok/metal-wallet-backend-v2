@@ -53,12 +53,8 @@ public class SecurityConfig {
 
   @Bean
   public UserDetailsService userDetailsService() {
-    String prometheusUser = env.getProperty("prometheus.user", "admin");
-    String prometheusPassword = env.getProperty("prometheus.password", "12345678");
-
-    log.info("prometheus: initialization prometheus");
-    log.info("prometheus user: {}", String.join(", ", prometheusUser));
-    log.info("prometheus passwd: {}", String.join(", ", prometheusPassword));
+    String prometheusUser = "admin";
+    String prometheusPassword = "12345678";
 
     UserDetails prometheus = User.withUsername(prometheusUser)
         .password(passwordEncoder().encode(prometheusPassword))
