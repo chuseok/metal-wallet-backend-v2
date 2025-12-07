@@ -28,6 +28,8 @@ services:
 
   prometheus:
     image: prom/prometheus
+    env_file:
+      - .env
     ports:
       - "9091:9090"
     volumes:

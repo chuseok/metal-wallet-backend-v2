@@ -16,8 +16,6 @@ jobs:
       TEST_MYSQL_DB: ${{ secrets.TEST_MYSQL_DB }}
       TEST_MYSQL_USER: ${{ secrets.TEST_MYSQL_USER }}
       TEST_MYSQL_PASSWORD: ${{ secrets.TEST_MYSQL_PASSWORD }}
-      PROMETHEUS_USER: ${{ secrets.PROMETHEUS_USER }}
-      PROMETHEUS_PASSWORD: ${{ secrets.PROMETHEUS_PASSWORD }}
     outputs:
       PROFILE: ${{ steps.set-profile.outputs.profile }}
     steps:
@@ -160,6 +158,8 @@ jobs:
 
             cat > .env <<EOF
             PROFILE=${SPRING_PROFILE}
+            PROMETHEUS_USER=${{ secrets.PROMETHEUS_USER }}
+            PROMETHEUS_PASSWORD=${{ secrets.PROMETHEUS_PASSWORD }}
             EOF
             
             echo "✅ .env file created!"
