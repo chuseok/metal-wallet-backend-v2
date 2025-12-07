@@ -2,10 +2,15 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'myapp-prod'
-    metrics_path: '/prometheus'
+  - job_name: 'spring_app'
+    metrics_path: '/api/prometheus'
     basic_auth:
       username: ${PROMETHEUS_USER}
       password: ${PROMETHEUS_PASSWORD}
     static_configs:
-      - targets: ['myapp-prod:8080']
+      - targets: ['172.31.38.30:8080']
+
+  - job_name: 'node_exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ '172.31.38.30:9100' ]
