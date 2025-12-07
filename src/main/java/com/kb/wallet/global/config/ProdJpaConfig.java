@@ -14,7 +14,7 @@ import java.util.Properties;
 @Slf4j
 public class ProdJpaConfig {
 
-  private final String hbm2ddlAuto = "none";
+  private final String hbm2ddlAuto = "update";
   private final boolean showSql = false;
 
   @Bean
