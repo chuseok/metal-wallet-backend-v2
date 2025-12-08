@@ -8,9 +8,12 @@ scrape_configs:
       username: admin
       password: 12345678
     static_configs:
-      - targets: ['172.31.38.30:8080']
+      - targets: ['app:8080']
 
   - job_name: 'node_exporter'
     metrics_path: '/metrics'
     static_configs:
-      - targets: [ '172.31.38.30:9100' ]
+      - targets:
+          - '172.31.38.30:9100'
+
+# 마지막 줄 반드시 빈 줄로 EOF

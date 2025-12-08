@@ -12,7 +12,7 @@ public class MetricsController {
   @Autowired
   private PrometheusMeterRegistry registry;
 
-  @GetMapping
+  @GetMapping(produces = "text/plain")
   public String scope() {
     return registry.scrape();
   }
