@@ -14,7 +14,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -65,13 +66,11 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationManager authManager(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
-    AuthenticationManagerBuilder authenticationManagerBuilder =
-        http.getSharedObject(AuthenticationManagerBuilder.class);
-    // UserDetailsService와 PasswordEncoder를 설정
-    authenticationManagerBuilder.userDetailsService(userDetailsService)
-        .passwordEncoder(passwordEncoder());
-    return authenticationManagerBuilder.build();
+  public AuthenticationManager authManager(UserDetailsService userDetailsService) throws Exception {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder());
+    return new ProviderManager(provider);
   }
 
   // 클라이언트의 CORS 요청을 허용하는 설정
@@ -89,10 +88,10 @@ public class SecurityConfig {
 
   @Bean
   @Order(1)
-  public SecurityFilterChain prometheusFilterChain(HttpSecurity http, AuthenticationManager authManager) throws Exception {
+  public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
     http
         .antMatcher("/api/prometheus/**")
-        .authenticationManager(authManager)
+//        .authenticationManager(authManager)
         .authorizeRequests()
         .anyRequest().authenticated()
         .and()
