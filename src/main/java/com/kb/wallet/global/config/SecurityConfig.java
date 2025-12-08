@@ -6,6 +6,7 @@ import com.kb.wallet.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -16,6 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,6 +45,10 @@ public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
   private final TokenProvider tokenProvider;
+
+  @Qualifier("dbUserDetailsService")
+  private final UserDetailsService userDetailsService;
+
   @Autowired
   Environment env;
 
@@ -52,13 +58,10 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
-  public UserDetailsService userDetailsService() {
-    String prometheusUser = "admin";
-    String prometheusPassword = "12345678";
-
-    UserDetails prometheus = User.withUsername(prometheusUser)
-        .password(passwordEncoder().encode(prometheusPassword))
+  @Bean(name = "prometheusUserDetailsService")
+  public UserDetailsService prometheusUserDetailsService() {
+    UserDetails prometheus = User.withUsername("admin")
+        .password(passwordEncoder().encode("12345678"))
         .roles("PROMETHEUS")
         .build();
 
@@ -66,7 +69,17 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationManager authManager(UserDetailsService userDetailsService) throws Exception {
+  public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+    AuthenticationManagerBuilder authenticationManagerBuilder =
+        http.getSharedObject(AuthenticationManagerBuilder.class);
+    // UserDetailsService와 PasswordEncoder를 설정
+    authenticationManagerBuilder.userDetailsService(userDetailsService)
+        .passwordEncoder(passwordEncoder());
+    return authenticationManagerBuilder.build();
+  }
+
+  @Bean
+  public AuthenticationManager prometheusAuthManager(@Qualifier("prometheusUserDetailsService") UserDetailsService userDetailsService) throws Exception {
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
     provider.setUserDetailsService(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder());
@@ -91,7 +104,7 @@ public class SecurityConfig {
   public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
     http
         .antMatcher("/api/prometheus/**")
-//        .authenticationManager(authManager)
+        .authenticationManager(prometheusAuthManager(prometheusUserDetailsService()))
         .authorizeRequests()
         .anyRequest().authenticated()
         .and()
