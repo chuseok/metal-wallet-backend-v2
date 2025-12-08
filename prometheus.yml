@@ -8,7 +8,7 @@ scrape_configs:
       username: admin
       password: 12345678
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['172.31.38.30:8080']
 
   - job_name: 'node_exporter'
     metrics_path: '/metrics'
