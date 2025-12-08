@@ -8,7 +8,7 @@ scrape_configs:
       username: admin
       password: 12345678
     static_configs:
-      - targets: ['myapp-prod:8080']
+      - targets: ['app:8080']
 
   - job_name: 'node_exporter'
     metrics_path: '/metrics'
