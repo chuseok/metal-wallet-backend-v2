@@ -58,3 +58,8 @@ services:
       - prometheus
     networks:
       - monitor-net
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:
