@@ -13,7 +13,8 @@ services:
     depends_on:
       - redis
     volumes:
-      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
+      - /opt/tomcat9/conf/server.xml:/usr/local/tomcat/conf/server.xml
+#      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
     networks:
@@ -48,6 +49,14 @@ services:
       - "/:/host:ro,rslave"
     command:
       - '--path.rootfs=/host'
+
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    container_name: mysql_exporter
+    environment:
+      - DATA_SOURCE_NAME=exporter:1234@(metalwallet-db.cl2gay6q6zvq.us-west-2.rds.amazonaws.com:3306)/
+    ports:
+      - "9104:9104"
 
   grafana:
     image: grafana/grafana

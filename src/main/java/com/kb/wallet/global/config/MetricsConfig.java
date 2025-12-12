@@ -15,7 +15,9 @@ public class MetricsConfig {
   @Bean
   public PrometheusMeterRegistry prometheusMeterRegistry() {
     PrometheusMeterRegistry registry = new PrometheusMeterRegistry(io.micrometer.prometheus.PrometheusConfig.DEFAULT);
-
+    registry.config().commonTags(
+        "application", "ticket-app"
+    );
 //    new ClassLoaderMetrics().bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
     new JvmGcMetrics().bindTo(registry);

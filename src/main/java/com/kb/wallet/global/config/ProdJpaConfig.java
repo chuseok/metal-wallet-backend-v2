@@ -25,6 +25,8 @@ public class ProdJpaConfig {
     properties.put("hibernate.show_sql", showSql);
     properties.put("hibernate.physical_naming_strategy",
         "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+    properties.setProperty("javax.persistence.lock.timeout", "2000");
+    properties.setProperty("javax.persistence.query.timeout", "3000");
     log.info("prod: {}", properties.get("hibernate.hbm2ddl.auto"));
     return properties;
   }
