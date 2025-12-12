@@ -150,7 +150,6 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           source: "mysqld-exporter/.my.cnf"
           target: "/home/ubuntu/metal-wallet-backend-v2/mysqld-exporter/"
-          strip_components: 1
 
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
