@@ -176,9 +176,6 @@ jobs:
             
             mkdir -p $APP_DIR
             cd $APP_DIR
-            echo "🔍 Checking APP_DIR path..."
-            pwd
-            ls -l
 
             cat > .env <<EOF
             PROFILE=${SPRING_PROFILE}
