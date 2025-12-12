@@ -57,6 +57,8 @@ services:
       - DATA_SOURCE_NAME=exporter:1234@(metalwallet-db.cl2gay6q6zvq.us-west-2.rds.amazonaws.com:3306)/
     ports:
       - "9104:9104"
+    networks:
+      - monitor-net
 
   grafana:
     image: grafana/grafana
