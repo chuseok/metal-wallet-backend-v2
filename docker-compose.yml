@@ -10,6 +10,8 @@ services:
       - .env
     ports:
       - "8080:8080"
+    depends_on:
+      - redis
     volumes:
       - /opt/tomcat9/conf/server.xml:/usr/local/tomcat/conf/server.xml
 #      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
@@ -53,8 +55,6 @@ services:
     container_name: mysql_exporter
     volumes:
       - ./mysqld-exporter/.my.cnf:/cfg/.my.cnf:ro
-    depends_on:
-      - mysql
     command:
       - --config.my-cnf=/cfg/.my.cnf
       - --web.listen-address=:9104
