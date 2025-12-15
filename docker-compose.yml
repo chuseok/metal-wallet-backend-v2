@@ -14,7 +14,7 @@ services:
       - redis
     volumes:
       - /opt/tomcat9/conf/server.xml:/usr/local/tomcat/conf/server.xml
-#      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
+      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
     networks:
@@ -50,13 +50,13 @@ services:
     command:
       - '--path.rootfs=/host'
 
-  mysql_exporter:
-    image: prom/mysqld-exporter
-    container_name: mysql_exporter
+  mysqld_exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysqld_exporter
     volumes:
-      - ./mysqld-exporter/.my.cnf:/cfg/.my.cnf:ro
+      - ./mysqld-exporter/.my.cnf:/etc/.my.cnf:ro
     command:
-      - --config.my-cnf=/cfg/.my.cnf
+      - --config.my-cnf=/etc/.my.cnf
       - --web.listen-address=:9104
     ports:
       - "9104:9104"

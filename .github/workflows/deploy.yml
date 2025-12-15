@@ -133,24 +133,6 @@ jobs:
           source: "prometheus.yml"
           target: "/home/ubuntu/metal-wallet-backend-v2/"
 
-      - name: Create mysqld-exporter directory on EC2
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            mkdir -p /home/ubuntu/metal-wallet-backend-v2/mysqld-exporter
-
-      - name: Copy .my.cnf to EC2
-        uses: appleboy/scp-action@v0.1.2
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "mysqld-exporter/.my.cnf"
-          target: "/home/ubuntu/metal-wallet-backend-v2/mysqld-exporter/"
-
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
