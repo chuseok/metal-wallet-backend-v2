@@ -59,7 +59,7 @@ services:
       - --config.my-cnf=/etc/.my.cnf
       - --web.listen-address=:9104
     ports:
-      - "9104:9104"
+      - "9105:9104"
     networks:
       - monitor-net
 
