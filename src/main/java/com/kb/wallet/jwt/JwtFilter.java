@@ -30,7 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
     String requestURI = request.getRequestURI();
     log.info("doFilterInternal requestURI: {}", requestURI);
 
-    if (requestURI.contains("/api/members/register") ||
+    if (requestURI.contains("/api/prometheus") ||
+        requestURI.contains("/api/members/register") ||
         requestURI.contains("/api/members/login") ||
         requestURI.startsWith("/api/test") ||
         requestURI.startsWith("/static") ||

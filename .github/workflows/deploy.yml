@@ -6,13 +6,12 @@ on:
       - main
       - develop
       - test
-      - test/6-testcontainer-setting
-
+      - feature/8-loadtest
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-testcontainer-setting' && 'prod' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/feature/8-loadtest' && 'prod' }}
     env:
       TEST_MYSQL_DB: ${{ secrets.TEST_MYSQL_DB }}
       TEST_MYSQL_USER: ${{ secrets.TEST_MYSQL_USER }}
@@ -35,7 +34,7 @@ jobs:
       - name: Set PROFILE based on branch
         id: set-profile
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]] || [[ "${GITHUB_REF_NAME}" == "test/6-testcontainer-setting" ]]; then
+          if [[ "${GITHUB_REF_NAME}" == "main" ]] || [[ "${GITHUB_REF_NAME}" == "test" ]] || [[ "${GITHUB_REF_NAME}" == "feature/8-loadtest" ]]; then
             echo "PROFILE=prod" >> $GITHUB_ENV
             echo "profile=prod" >> $GITHUB_OUTPUT
           else
@@ -88,7 +87,7 @@ jobs:
     needs: build
     env:
       PROFILE: ${{ needs.build.outputs.PROFILE }}
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/test/6-testcontainer-setting' && 'prod' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/develop' && 'dev' || github.ref == 'refs/heads/test' && 'prod' || github.ref == 'refs/heads/feature/8-loadtest' && 'prod' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -125,6 +124,15 @@ jobs:
           source: "docker-compose.yml"
           target: "/home/ubuntu/metal-wallet-backend-v2/"
 
+      - name: Copy prometheus.yml to EC2
+        uses: appleboy/scp-action@v0.1.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "prometheus.yml"
+          target: "/home/ubuntu/metal-wallet-backend-v2/"
+
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -135,10 +143,6 @@ jobs:
             SPRING_PROFILE=${{ env.PROFILE }}
             
             echo "📦 curr:"
-            pwd
-            ls -l
-            echo "📦 dockerfile:"
-            ls -l | grep -i dockerfile
             
             # 기존 컨테이너 중지 및 삭제
             docker stop myapp-$SPRING_PROFILE || true
@@ -153,12 +157,11 @@ jobs:
             
             mkdir -p $APP_DIR
             cd $APP_DIR
-            echo "🔍 Checking APP_DIR path..."
-            pwd
-            ls -l
 
             cat > .env <<EOF
             PROFILE=${SPRING_PROFILE}
+            PROMETHEUS_USER=${{ secrets.PROMETHEUS_USER }}
+            PROMETHEUS_PASSWORD=${{ secrets.PROMETHEUS_PASSWORD }}
             EOF
             
             echo "✅ .env file created!"

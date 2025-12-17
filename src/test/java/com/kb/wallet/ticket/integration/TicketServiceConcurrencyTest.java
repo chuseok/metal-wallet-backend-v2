@@ -4,7 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.kb.wallet.global.config.AppConfig;
-import com.kb.wallet.global.config.RedisConfig;
+import com.kb.wallet.global.config.TestDatabaseConfig;
+import com.kb.wallet.global.config.TestRedisConfig;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.repository.MemberRepository;
 import com.kb.wallet.musical.domain.Musical;
@@ -50,8 +51,10 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -59,26 +62,19 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-
-@ActiveProfiles("test")
+//@TestPropertySource(properties = "spring.profiles.active=test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
 @ContextConfiguration(
-    classes = {AppConfig.class, RedisConfig.class},
-    initializers = TicketServiceConcurrencyTest.Initializer.class
+    classes = {
+        TestDatabaseConfig.class,
+        AppConfig.class,
+        TestRedisConfig.class
+    }
+    , initializers = TicketServiceConcurrencyTest.Initializer.class
 )
 @Tag("integration")
 class TicketServiceConcurrencyTest {
-
-  @Container
-  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
-      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
-      .withUsername(System.getenv("TEST_MYSQL_USER"))
-      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
-  @Container
-  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
-      .withExposedPorts(6379);
-
   @Autowired
   static RedissonClient redisson;
 
@@ -106,13 +102,21 @@ class TicketServiceConcurrencyTest {
   Schedule schedule;
   Musical musical;
 
+  @Container
+  static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+      .withDatabaseName(System.getenv("TEST_MYSQL_DB"))
+      .withUsername(System.getenv("TEST_MYSQL_USER"))
+      .withPassword(System.getenv("TEST_MYSQL_PASSWORD"));
+  @Container
+  static GenericContainer<?> redis = new GenericContainer<>("redis:7.0.11-alpine")
+      .withExposedPorts(6379);
+
   static class Initializer implements
       ApplicationContextInitializer<ConfigurableApplicationContext> {
-
     @Override
     public void initialize(ConfigurableApplicationContext context) {
-      context.getEnvironment().setActiveProfiles("test");
-      System.setProperty("profile", "test");
+      AnnotationConfigWebApplicationContext testContext = new AnnotationConfigWebApplicationContext();
+      testContext.getEnvironment().setActiveProfiles("test");
 
       mysql.start();
       redis.start();

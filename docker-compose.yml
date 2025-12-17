@@ -12,6 +12,9 @@ services:
       - "8080:8080"
     depends_on:
       - redis
+    volumes:
+      - /opt/tomcat9/conf/server.xml:/usr/local/tomcat/conf/server.xml
+      - /opt/tomcat9/logs:/usr/local/tomcat/logs   # Tomcat, Spring logback 로그 공유
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=${PROFILE} -Dprofile=${PROFILE}
     networks:
@@ -26,12 +29,40 @@ services:
 
   prometheus:
     image: prom/prometheus
+    env_file:
+      - .env
     ports:
       - "9091:9090"
     volumes:
-      - /home/ubuntu/metal-wallet-backend-v2/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
     networks:
       - monitor-net
+
+  node_exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: node_exporter
+    network_mode: "host"
+    pid: "host"
+    restart: unless-stopped
+    volumes:
+      - "/:/host:ro,rslave"
+    command:
+      - '--path.rootfs=/host'
+
+  mysqld_exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysqld_exporter
+    volumes:
+      - ./mysqld-exporter/.my.cnf:/etc/.my.cnf:ro
+    command:
+      - --config.my-cnf=/etc/.my.cnf
+      - --web.listen-address=:9104
+    ports:
+      - "9105:9104"
+    networks:
+      - monitor-net
+
 
   grafana:
     image: grafana/grafana
@@ -43,3 +74,9 @@ services:
       - prometheus
     networks:
       - monitor-net
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:
+  prometheus-data:

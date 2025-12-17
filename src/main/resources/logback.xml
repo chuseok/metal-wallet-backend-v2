@@ -11,12 +11,9 @@
     </appender>
 
     <!-- 파일 출력 설정 -->
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>/home/ubuntu/logs/app.log</file>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRorntjdllingPolicy">
-            <fileNamePattern>/home/ubuntu/logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/usr/local/tomcat/logs/app.log.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
 
