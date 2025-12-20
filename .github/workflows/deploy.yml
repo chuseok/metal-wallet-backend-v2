@@ -2,11 +2,6 @@ name: Deploy To EC2
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - test
-      - feature/8-loadtest
 
 jobs:
   build:
