@@ -71,6 +71,7 @@ public class DataSourceConfig {
     config.setIdleTimeout(idleTimeout);
     config.setMaxLifetime(maxLifetime);
     config.setAutoCommit(true);
+    config.setLeakDetectionThreshold(3000);
 
     return new HikariDataSource(config);
   }
