@@ -51,7 +51,7 @@ services:
       - '--path.rootfs=/host'
 
   mysqld_exporter:
-    image: prom/mysqld-exporter
+    image: prom/mysqld-exporter:latest
     container_name: mysqld_exporter
     volumes:
       - ./mysqld-exporter/.my.cnf:/etc/.my.cnf:ro
