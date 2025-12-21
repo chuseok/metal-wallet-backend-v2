@@ -129,7 +129,7 @@ public class SecurityConfig {
         .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(
             ticketLoadTestAuthFilter,
-            JwtFilter.class
+            UsernamePasswordAuthenticationFilter.class
         )
         .authorizeHttpRequests(auth -> auth
             .antMatchers(HttpMethod.POST, "/api/tickets").authenticated()
