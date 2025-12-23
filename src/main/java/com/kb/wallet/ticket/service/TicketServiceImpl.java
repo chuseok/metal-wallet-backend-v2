@@ -43,9 +43,8 @@ public class TicketServiceImpl implements TicketService {
   private final TicketRepository ticketRepository;
   private final MemberService memberService;
   private final SeatService seatService;
-  private final SeatRepository seatRepository;
   private final RSAService rsaService;
-  private final EntityManager entityManager;
+//  private final EntityManager entityManager;
 
   @Override
   public Ticket getTicket(Long id) {
@@ -61,7 +60,7 @@ public class TicketServiceImpl implements TicketService {
         pageable);
   }
 
-  @DistributedLock(key = "#seatId")
+//  @DistributedLock(key = "#seatId")
   @Transactional(rollbackFor = CustomException.class)
   @Override
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
@@ -77,14 +76,14 @@ public class TicketServiceImpl implements TicketService {
   }
 
   Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
-    Seat seat = seatService.getSeatById(seatId);
+    Seat seat = seatService.getSeatByIdWithLock(seatId);
     seat.checkSeatAvailability();
 
     Ticket ticket = Ticket.createBookedTicket(member, seat.getSchedule().getMusical(), seat,
         deviceId);
 
     seat.updateSeatAvailability();
-    entityManager.flush();
+//    entityManager.flush();
 
     return ticketRepository.save(ticket);
   }
