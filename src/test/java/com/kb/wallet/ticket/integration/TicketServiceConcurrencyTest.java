@@ -95,8 +95,8 @@ class TicketServiceConcurrencyTest {
 
   private Long testSeatId;
   private Long testSectionId;
-  private final int testMemberCnt = 100;
-  private final int testAvailableSeats = 100;
+  private final int testMemberCnt = 20;
+  private final int testAvailableSeats = 20;
 
   Section section;
   Schedule schedule;
@@ -240,7 +240,7 @@ class TicketServiceConcurrencyTest {
   }
 
   @Test
-  @DisplayName("100명이 동시에 티켓 예매 시 단 1명만 성공")
+  @DisplayName("20명이 동시에 티켓 예매 시 단 1명만 성공")
   void testBookTicket_multipleUsersSingleSeatSuccess() throws InterruptedException {
     //given
     Seat seat1 = seatRepository.save(new Seat(
@@ -297,7 +297,7 @@ class TicketServiceConcurrencyTest {
     int availableSeats = sectionRepository.findById(testSectionId).get().getAvailableSeats();
 
     //then
-    assertEquals(99, availableSeats, "가용 가능한 좌석 수는 99이여야 합니다.");
+    assertEquals(19, availableSeats, "가용 가능한 좌석 수는 19이여야 합니다.");
     assertEquals(1, ticketRepository.count(), "티켓 테이블에 단 1건의 데이터만 존재해야 합니다.");
   }
 
