@@ -36,23 +36,19 @@ public class DistributedLockAop {
     String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
     RLock rLock = redissonClient.getLock(key);
 
+    boolean locked = false;
     try {
-      boolean available = rLock.tryLock(distributedLock.waitTime(), -1, distributedLock.timeUnit());
-      if (!available) {
-        return false;
+      locked = rLock.tryLock(0, distributedLock.leaseTime(), distributedLock.timeUnit());
+      if (!locked) {
+        log.info("Lock acquisition failed: {}", key);
+        throw new IllegalStateException("Duplicate booking request");
       }
 
       return aopForTransaction.proceed(joinPoint);
-    } catch (InterruptedException e) {
-      throw new InterruptedException();
+
     } finally {
-      try {
+      if (locked && rLock.isHeldByCurrentThread()) {
         rLock.unlock();
-      } catch (IllegalMonitorStateException e) {
-        log.info("Redisson Lock Already UnLock {} {}",
-            method.getName(),
-            key
-        );
       }
     }
   }
