@@ -1,5 +1,7 @@
 package com.kb.wallet.lock;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -41,7 +43,7 @@ public class DistributedLockAop {
       locked = rLock.tryLock(0, distributedLock.leaseTime(), distributedLock.timeUnit());
       if (!locked) {
         log.info("Lock acquisition failed: {}", key);
-        throw new IllegalStateException("Duplicate booking request");
+        throw new CustomException(ErrorCode.SEAT_LOCKED_BY_ANOTHER_USER);
       }
 
       return aopForTransaction.proceed(joinPoint);

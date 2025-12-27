@@ -105,7 +105,9 @@ public enum ErrorCode {
   // Seats Errors
   SEAT_NOT_FOUND_ERROR(404, "SE001", "좌석을 찾을 수 없습니다."),
   SEAT_ALREADY_BOOKED_ERROR(409, "SE002", "이미 예약된 좌석입니다."),
-  NOT_ENOUGH_AVAILABLE_SEATS_ERROR(400, "SE003", "구역에 사용 가능한 좌석이 충분하지 않습니다.");
+  NOT_ENOUGH_AVAILABLE_SEATS_ERROR(400, "SE003", "구역에 사용 가능한 좌석이 충분하지 않습니다."),
+
+  SEAT_LOCKED_BY_ANOTHER_USER(409, "SE004", "동시 예약 중인 좌석입니다. 잠시 후 다시 시도해주세요.");
 
 
   /**
