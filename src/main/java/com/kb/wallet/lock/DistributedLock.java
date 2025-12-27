@@ -30,5 +30,5 @@ public @interface DistributedLock {
    * 락 임대 시간
    * 락을 획득한 이후 leaseTime 이 지나면 락을 해제한다
    */
-  long leaseTime() default 2L;
+  long leaseTime() default 1L;
 }
