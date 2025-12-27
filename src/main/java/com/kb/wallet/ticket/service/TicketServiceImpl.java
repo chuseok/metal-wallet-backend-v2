@@ -83,7 +83,7 @@ public class TicketServiceImpl implements TicketService {
         deviceId);
 
     seat.updateSeatAvailability();
-    entityManager.flush();
+//    entityManager.flush();
 
     return ticketRepository.save(ticket);
   }
