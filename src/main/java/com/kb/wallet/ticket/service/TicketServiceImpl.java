@@ -44,7 +44,7 @@ public class TicketServiceImpl implements TicketService {
   private final MemberService memberService;
   private final SeatService seatService;
   private final RSAService rsaService;
-//  private final EntityManager entityManager;
+  private final EntityManager entityManager;
 
   @Override
   public Ticket getTicket(Long id) {
@@ -83,7 +83,7 @@ public class TicketServiceImpl implements TicketService {
         deviceId);
 
     seat.updateSeatAvailability();
-//    entityManager.flush();
+    entityManager.flush();
 
     return ticketRepository.save(ticket);
   }
