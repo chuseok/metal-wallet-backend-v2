@@ -50,7 +50,18 @@ public class DistributedLockAop {
 
     } finally {
       if (locked && rLock.isHeldByCurrentThread()) {
-        rLock.unlock();
+        // 트랜잭션 commit 이후에 unlock
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+            new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
+              @Override
+              public void afterCompletion(int status) {
+                if (rLock.isHeldByCurrentThread()) {
+                  rLock.unlock();
+                  log.info("Lock released after transaction commit: {}", key);
+                }
+              }
+            }
+        );
       }
     }
   }
