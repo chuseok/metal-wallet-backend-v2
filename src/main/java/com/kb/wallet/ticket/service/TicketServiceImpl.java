@@ -60,7 +60,7 @@ public class TicketServiceImpl implements TicketService {
         pageable);
   }
 
-  @DistributedLock(key = "#seatId")
+
   @Transactional(rollbackFor = CustomException.class)
   @Override
   public List<TicketResponse> bookTicket(String email, TicketRequest ticketRequest) {
@@ -75,6 +75,7 @@ public class TicketServiceImpl implements TicketService {
     return responses;
   }
 
+  @DistributedLock(key = "#seatId")
   Ticket bookTicketForSeat(Long seatId, String deviceId, Member member) {
     Seat seat = seatService.getSeatById(seatId);
     seat.checkSeatAvailability();
@@ -83,7 +84,6 @@ public class TicketServiceImpl implements TicketService {
         deviceId);
 
     seat.updateSeatAvailability();
-//    entityManager.flush();
 
     return ticketRepository.save(ticket);
   }
