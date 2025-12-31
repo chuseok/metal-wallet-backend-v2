@@ -52,6 +52,8 @@ public class HttpMetricsFilter implements Filter {
               Duration.ofSeconds(3)
           )
           .register(registry);
+
+      sample.stop(timer);
     }
   }
 
