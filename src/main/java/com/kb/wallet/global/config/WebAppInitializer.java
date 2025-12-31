@@ -1,6 +1,7 @@
 package com.kb.wallet.global.config;
 
 
+import com.kb.wallet.global.metrics.MetricsFilter;
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -18,7 +19,9 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
   protected Filter[] getServletFilters() {
     CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
     encodingFilter.setEncoding("UTF-8");
-    return new Filter[]{encodingFilter};
+    MetricsFilter metricsFilter = new MetricsFilter();
+
+    return new Filter[]{encodingFilter, metricsFilter};
   }
 
   @Override
