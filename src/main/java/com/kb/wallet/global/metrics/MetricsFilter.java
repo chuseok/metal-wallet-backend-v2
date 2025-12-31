@@ -27,6 +27,7 @@ public class MetricsFilter implements Filter {
     Timer.Sample sample = Timer.start();
     log.info(">>> MetricsFilter called2");
 
+
     try {
       chain.doFilter(request, response);
     } finally {
