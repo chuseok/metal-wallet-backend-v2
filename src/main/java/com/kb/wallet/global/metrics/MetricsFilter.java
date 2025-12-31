@@ -11,19 +11,14 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 @Component
 public class MetricsFilter implements Filter {
 
-  private Timer timer;
+  private final HttpRequestTimer httpRequestTimer;
+  private final PrometheusMeterRegistry registry;
 
-  @Override
-  public void init(FilterConfig filterConfig) {
-    ServletContext context = filterConfig.getServletContext();
-    WebApplicationContext springContext =
-        WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-
-    HttpRequestTimer httpRequestTimer =
-        springContext.getBean(HttpRequestTimer.class);
-
-    this.timer = httpRequestTimer.getTimer();
+  public MetricsFilter(HttpRequestTimer httpRequestTimer, PrometheusMeterRegistry registry) {
+    this.httpRequestTimer = httpRequestTimer;
+    this.registry = registry;
   }
+
   @Override
   public void doFilter(
       ServletRequest request,
@@ -31,12 +26,12 @@ public class MetricsFilter implements Filter {
       FilterChain chain
   ) throws IOException, ServletException {
 
-    Timer.Sample sample = Timer.start();
+    Timer.Sample sample = Timer.start(registry);
 
     try {
       chain.doFilter(request, response);
     } finally {
-      sample.stop(timer);
+      sample.stop(httpRequestTimer.getTimer());
     }
   }
 }
