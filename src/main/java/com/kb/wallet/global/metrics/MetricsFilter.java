@@ -4,11 +4,11 @@ import io.micrometer.core.instrument.Timer;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import java.io.IOException;
 import javax.servlet.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 @Component
+@Slf4j
 public class MetricsFilter implements Filter {
 
   private final HttpRequestTimer httpRequestTimer;
@@ -27,7 +27,7 @@ public class MetricsFilter implements Filter {
   ) throws IOException, ServletException {
 
     Timer.Sample sample = Timer.start(registry);
-
+    log.info(">>> MetricsFilter called");
     try {
       chain.doFilter(request, response);
     } finally {
