@@ -12,11 +12,9 @@ import org.springframework.stereotype.Component;
 public class MetricsFilter implements Filter {
 
   private final HttpRequestTimer httpRequestTimer;
-  private final PrometheusMeterRegistry registry;
 
-  public MetricsFilter(HttpRequestTimer httpRequestTimer, PrometheusMeterRegistry registry) {
+  public MetricsFilter(HttpRequestTimer httpRequestTimer) {
     this.httpRequestTimer = httpRequestTimer;
-    this.registry = registry;
   }
 
   @Override
@@ -26,8 +24,9 @@ public class MetricsFilter implements Filter {
       FilterChain chain
   ) throws IOException, ServletException {
 
-    Timer.Sample sample = Timer.start(registry);
-    log.info(">>> MetricsFilter called");
+    Timer.Sample sample = Timer.start();
+    log.info(">>> MetricsFilter called2");
+
     try {
       chain.doFilter(request, response);
     } finally {
