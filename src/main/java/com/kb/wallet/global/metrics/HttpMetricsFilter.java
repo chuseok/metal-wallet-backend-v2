@@ -2,6 +2,7 @@ package com.kb.wallet.global.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import java.io.IOException;
 import java.time.Duration;
 import javax.servlet.*;
@@ -12,21 +13,22 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class HttpMetricsFilter implements Filter {
+  private final PrometheusMeterRegistry registry;
 
-  private MeterRegistry registry;
-
-  public HttpMetricsFilter(MeterRegistry registry) {
+  public HttpMetricsFilter(PrometheusMeterRegistry registry) {
+    log.error("HttpMetricsFilter registry = {}", registry.getClass());
     this.registry = registry;
   }
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-
+    log.info("HttpFilter1");
     if (!(request instanceof HttpServletRequest)) {
       chain.doFilter(request, response);
       return;
     }
+    log.info("HttpFilter2");
 
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
