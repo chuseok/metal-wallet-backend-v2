@@ -49,14 +49,5 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     servletContext.setInitParameter("contextInitializerClasses",
         "com.kb.wallet.global.config.ProfileInitializer");
     super.onStartup(servletContext);
-
-    WebApplicationContext context =
-        WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-
-    PrometheusMeterRegistry meterRegistry = context.getBean(PrometheusMeterRegistry.class);
-
-    HttpMetricsFilter metricsFilter = new HttpMetricsFilter(meterRegistry);
-    FilterRegistration.Dynamic filterReg = servletContext.addFilter("httpMetricsFilter", metricsFilter);
-    filterReg.addMappingForUrlPatterns(null, false, "/*");
   }
 }

@@ -3,13 +3,10 @@ package com.kb.wallet.global.metrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 @Component
 @Slf4j
@@ -32,7 +29,6 @@ public class HttpMetricsFilter implements Filter {
 
     HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-    // URI 패턴 단순화
     String path = normalizeUri(httpRequest.getRequestURI());
     String method = httpRequest.getMethod();
 
