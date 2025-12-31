@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 @Slf4j
@@ -23,35 +22,32 @@ public class HttpMetricsFilter implements Filter {
   }
 
   @Override
-  public void init(FilterConfig filterConfig) throws ServletException {
-    ServletContext sc = filterConfig.getServletContext();
-    WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(sc);
-    this.registry = ctx.getBean(MeterRegistry.class);
-  }
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+      throws IOException, ServletException {
 
-  @Override
-  public  void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
+    if (!(request instanceof HttpServletRequest)) {
+      chain.doFilter(request, response);
+      return;
+    }
+
     HttpServletRequest httpRequest = (HttpServletRequest) request;
-    HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-    long start = System.nanoTime();
+    // URI 패턴 단순화
+    String path = normalizeUri(httpRequest.getRequestURI());
+    String method = httpRequest.getMethod();
+
+    Timer.Sample sample = Timer.start(registry);
 
     try {
       chain.doFilter(request, response);
     } finally {
-      long durationNs = System.nanoTime() - start;
-
-      Timer.builder("http_server_requests_seconds")
+      Timer timer = Timer.builder("http.server.requests")
           .description("HTTP Server Requests")
-          .tags(
-              "method", httpRequest.getMethod(),
-              "uri", httpRequest.getRequestURI(),
-              "status", String.valueOf(httpResponse.getStatus())
-          )
-          // 🔥 이게 중요
-          .publishPercentileHistogram(true)
-          .register(registry)
-          .record(durationNs, TimeUnit.NANOSECONDS);
+          .tags("uri", path, "method", method)
+          .publishPercentiles(0.5, 0.9, 0.95) // P50, P90, P95
+          .register(registry);
+
+      sample.stop(timer);
     }
   }
 

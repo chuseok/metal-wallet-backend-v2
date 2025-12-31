@@ -1,9 +1,14 @@
 package com.kb.wallet.global.config;
 
 
+import com.kb.wallet.global.metrics.HttpMetricsFilter;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -26,7 +31,7 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 
   @Override
   protected Class<?>[] getRootConfigClasses() {
-    return new Class[]{SecurityConfig.class, AppConfig.class};
+    return new Class[]{MetricsConfig.class, SecurityConfig.class, AppConfig.class};
   }
 
   @Override
@@ -44,5 +49,14 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     servletContext.setInitParameter("contextInitializerClasses",
         "com.kb.wallet.global.config.ProfileInitializer");
     super.onStartup(servletContext);
+
+    WebApplicationContext context =
+        WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+
+    PrometheusMeterRegistry meterRegistry = context.getBean(PrometheusMeterRegistry.class);
+
+    HttpMetricsFilter metricsFilter = new HttpMetricsFilter(meterRegistry);
+    FilterRegistration.Dynamic filterReg = servletContext.addFilter("httpMetricsFilter", metricsFilter);
+    filterReg.addMappingForUrlPatterns(null, false, "/*");
   }
 }
