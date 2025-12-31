@@ -41,10 +41,10 @@ public class HttpMetricsFilter implements Filter {
     try {
       chain.doFilter(request, response);
     } finally {
-      Timer timer = Timer.builder("http.server.requests")
+      Timer timer = Timer.builder("http.server.requests")//http_server_requests_count
           .description("HTTP Server Requests")
           .tags("uri", path, "method", method)
-          .publishPercentiles(0.5, 0.9, 0.95) // P50, P90, P95
+          .publishPercentileHistogram(true)
           .register(registry);
 
       sample.stop(timer);
