@@ -1,12 +1,10 @@
 package com.kb.wallet.global.config;
 
 
-import com.kb.wallet.global.metrics.MetricsFilter;
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 
@@ -21,10 +19,9 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
     encodingFilter.setEncoding("UTF-8");
 
-    DelegatingFilterProxy metricsFilterProxy =
-        new DelegatingFilterProxy("metricsFilter");
-
-    return new Filter[]{metricsFilterProxy, encodingFilter};
+    return new Filter[]{
+        encodingFilter
+    };
   }
 
   @Override
