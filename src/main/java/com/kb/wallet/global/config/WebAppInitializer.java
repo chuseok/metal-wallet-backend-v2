@@ -24,7 +24,7 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     DelegatingFilterProxy metricsFilterProxy =
         new DelegatingFilterProxy("metricsFilter");
 
-    return new Filter[]{encodingFilter, metricsFilterProxy};
+    return new Filter[]{metricsFilterProxy, encodingFilter};
   }
 
   @Override
