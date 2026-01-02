@@ -10,7 +10,6 @@ import javax.servlet.http.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
 public class HttpMetricsFilter implements Filter {
   private final PrometheusMeterRegistry registry;
@@ -35,15 +34,15 @@ public class HttpMetricsFilter implements Filter {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-    String path = normalizeUri(httpRequest.getRequestURI());
-    String method = httpRequest.getMethod();
-    String status = String.valueOf(httpResponse.getStatus());
-
     Timer.Sample sample = Timer.start(registry);
 
     try {
       chain.doFilter(request, response);
     } finally {
+      String path = normalizeUri(httpRequest.getRequestURI());
+      String method = httpRequest.getMethod();
+      String status = String.valueOf(httpResponse.getStatus());
+
       Timer timer = Timer.builder("http.server.requests")
           .description("HTTP Server Requests")
           .tags("uri", path, "method", method, "status", status)

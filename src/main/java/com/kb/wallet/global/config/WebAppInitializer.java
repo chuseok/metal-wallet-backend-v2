@@ -3,6 +3,8 @@ package com.kb.wallet.global.config;
 
 import com.kb.wallet.global.metrics.HttpMetricsFilter;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import java.util.EnumSet;
+import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
@@ -49,5 +51,22 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     servletContext.setInitParameter("contextInitializerClasses",
         "com.kb.wallet.global.config.ProfileInitializer");
     super.onStartup(servletContext);
+
+    PrometheusMeterRegistry registry =
+        WebApplicationContextUtils
+            .getRequiredWebApplicationContext(servletContext)
+            .getBean(PrometheusMeterRegistry.class);
+
+    FilterRegistration.Dynamic filter =
+        servletContext.addFilter(
+            "httpMetricsFilter",
+            new HttpMetricsFilter(registry)
+        );
+
+    filter.addMappingForUrlPatterns(
+        EnumSet.of(DispatcherType.REQUEST),
+        false,
+        "/*"
+    );
   }
 }
