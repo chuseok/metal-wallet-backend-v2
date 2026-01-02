@@ -1,16 +1,9 @@
 package com.kb.wallet.global.config;
 
 
-import com.kb.wallet.global.metrics.HttpMetricsFilter;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import java.util.EnumSet;
-import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -33,7 +26,7 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 
   @Override
   protected Class<?>[] getRootConfigClasses() {
-    return new Class[]{MetricsConfig.class, SecurityConfig.class, AppConfig.class};
+    return new Class[]{SecurityConfig.class, AppConfig.class};
   }
 
   @Override
