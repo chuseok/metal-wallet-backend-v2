@@ -1,7 +1,7 @@
 <configuration>
 
     <!-- HikariCP 로그 -->
-    <logger name="com.zaxxer.hikari" level="DEBUG" />
+<!--    <logger name="com.zaxxer.hikari" level="DEBUG" />-->
 <!--    <logger name="com.zaxxer.hikari.pool.HikariPool" level="DEBUG" />-->
 
     <logger name="org.springframework.transaction" level="TRACE"/>
