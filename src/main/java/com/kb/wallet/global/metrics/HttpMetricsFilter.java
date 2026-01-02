@@ -31,14 +31,14 @@ public class HttpMetricsFilter implements Filter {
     }
     log.info("HttpFilter2");
 
-    HttpServletRequest httpRequest = (HttpServletRequest) request;
-    HttpServletResponse httpResponse = (HttpServletResponse) response;
-
     Timer.Sample sample = Timer.start(registry);
 
     try {
       chain.doFilter(request, response);
     } finally {
+      HttpServletRequest httpRequest = (HttpServletRequest) request;
+      HttpServletResponse httpResponse = (HttpServletResponse) response;
+
       String path = normalizeUri(httpRequest.getRequestURI());
       String method = httpRequest.getMethod();
       String status = String.valueOf(httpResponse.getStatus());
