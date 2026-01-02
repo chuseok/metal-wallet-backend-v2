@@ -12,7 +12,6 @@ import javax.servlet.ServletException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 
@@ -27,12 +26,8 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
     encodingFilter.setEncoding("UTF-8");
 
-    DelegatingFilterProxy metricsFilter =
-        new DelegatingFilterProxy("httpMetricsFilter");
-
-    return new Filter[] {
-        encodingFilter,
-        metricsFilter
+    return new Filter[]{
+        encodingFilter
     };
   }
 

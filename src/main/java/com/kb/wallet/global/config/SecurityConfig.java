@@ -1,6 +1,6 @@
 package com.kb.wallet.global.config;
 
-
+import com.kb.wallet.global.metrics.HttpMetricsFilter;
 import com.kb.wallet.global.security.TicketLoadTestAuthFilter;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
@@ -49,9 +49,9 @@ public class SecurityConfig {
   private String frontendUrl;
   private final TokenProvider tokenProvider;
   private final TicketLoadTestAuthFilter ticketLoadTestAuthFilter;
-
   @Qualifier("dbUserDetailsService")
   private final UserDetailsService userDetailsService;
+  private final HttpMetricsFilter httpMetricsFilter;
 
   @Autowired
   Environment env;
@@ -126,6 +126,7 @@ public class SecurityConfig {
   @Order(2)
   public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
+        .addFilterBefore(httpMetricsFilter, CorsFilter.class)
         .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(
             ticketLoadTestAuthFilter,
