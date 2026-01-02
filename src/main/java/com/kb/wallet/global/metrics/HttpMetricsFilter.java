@@ -16,14 +16,16 @@ public class HttpMetricsFilter implements Filter {
   private final PrometheusMeterRegistry registry;
 
   public HttpMetricsFilter(PrometheusMeterRegistry registry) {
-    log.error("HttpMetricsFilter registry = {}", registry.getClass());
+    log.error("HttpMetricsFilter registry identity={}",
+        System.identityHashCode(registry));
     this.registry = registry;
   }
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-    log.info("HttpFilter1");
+    log.error("🔥 HttpMetricsFilter DO_FILTER CALLED thread={}",
+        Thread.currentThread().getName());
     if (!(request instanceof HttpServletRequest)) {
       chain.doFilter(request, response);
       return;
