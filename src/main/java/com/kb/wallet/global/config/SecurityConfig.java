@@ -32,6 +32,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -126,11 +127,14 @@ public class SecurityConfig {
   @Order(2)
   public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
-        .addFilterBefore(httpMetricsFilter, CorsFilter.class)
         .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(
             ticketLoadTestAuthFilter,
             UsernamePasswordAuthenticationFilter.class
+        )
+        .addFilterBefore(
+            httpMetricsFilter,
+            FilterSecurityInterceptor.class
         )
         .authorizeHttpRequests(auth -> auth
             .antMatchers(HttpMethod.POST, "/api/tickets").authenticated()
