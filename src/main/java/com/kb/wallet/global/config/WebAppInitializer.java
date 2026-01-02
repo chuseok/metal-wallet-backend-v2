@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 
@@ -26,8 +27,12 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
     encodingFilter.setEncoding("UTF-8");
 
-    return new Filter[]{
-        encodingFilter
+    DelegatingFilterProxy metricsFilter =
+        new DelegatingFilterProxy("httpMetricsFilter");
+
+    return new Filter[] {
+        encodingFilter,
+        metricsFilter
     };
   }
 
@@ -51,22 +56,5 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     servletContext.setInitParameter("contextInitializerClasses",
         "com.kb.wallet.global.config.ProfileInitializer");
     super.onStartup(servletContext);
-
-    PrometheusMeterRegistry registry =
-        WebApplicationContextUtils
-            .getRequiredWebApplicationContext(servletContext)
-            .getBean(PrometheusMeterRegistry.class);
-
-    FilterRegistration.Dynamic filter =
-        servletContext.addFilter(
-            "httpMetricsFilter",
-            new HttpMetricsFilter(registry)
-        );
-
-    filter.addMappingForUrlPatterns(
-        EnumSet.of(DispatcherType.REQUEST),
-        false,
-        "/*"
-    );
   }
 }
