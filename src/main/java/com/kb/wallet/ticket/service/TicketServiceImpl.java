@@ -8,7 +8,6 @@ import com.kb.wallet.lock.DistributedLock;
 import com.kb.wallet.member.domain.Member;
 import com.kb.wallet.member.service.MemberService;
 import com.kb.wallet.seat.domain.Seat;
-import com.kb.wallet.seat.repository.SeatRepository;
 import com.kb.wallet.seat.service.SeatService;
 import com.kb.wallet.ticket.constant.TicketStatus;
 import com.kb.wallet.ticket.domain.Ticket;
@@ -31,8 +30,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -83,6 +80,7 @@ public class TicketServiceImpl implements TicketService {
         deviceId);
 
     seat.updateSeatAvailability();
+    entityManager.flush();
 
     return ticketRepository.save(ticket);
   }
