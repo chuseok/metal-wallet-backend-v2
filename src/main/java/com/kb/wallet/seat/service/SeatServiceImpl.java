@@ -5,6 +5,8 @@ import com.kb.wallet.global.exception.CustomException;
 import com.kb.wallet.seat.domain.Seat;
 import com.kb.wallet.seat.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.dialect.lock.PessimisticEntityLockException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,13 +17,17 @@ public class SeatServiceImpl implements SeatService {
 
   @Override
   public Seat getSeatById(Long seatId) {
-    return seatRepository.findByIdWithLock(seatId)
+    return seatRepository.findById(seatId)
         .orElseThrow(() -> new CustomException(ErrorCode.SEAT_NOT_FOUND_ERROR));
   }
 
   @Override
   public Seat getSeatByIdWithLock(Long seatId) {
-    return seatRepository.findByIdWithLock(seatId)
-        .orElseThrow(() -> new CustomException(ErrorCode.SEAT_NOT_FOUND_ERROR));
+    try {
+      return seatRepository.findByIdWithLock(seatId)
+          .orElseThrow(() -> new CustomException(ErrorCode.SEAT_NOT_FOUND_ERROR));
+    } catch (PessimisticLockingFailureException e) {
+      throw new CustomException(ErrorCode.SEAT_LOCKED_BY_ANOTHER_USER);
+    }
   }
 }

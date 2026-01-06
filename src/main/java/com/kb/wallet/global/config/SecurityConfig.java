@@ -1,6 +1,7 @@
 package com.kb.wallet.global.config;
 
-
+import com.kb.wallet.global.metrics.HttpMetricsFilter;
+import com.kb.wallet.global.security.TicketLoadTestAuthFilter;
 import com.kb.wallet.jwt.JwtFilter;
 import com.kb.wallet.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -30,6 +32,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -46,9 +49,10 @@ public class SecurityConfig {
   @Value("${frontend.url}")
   private String frontendUrl;
   private final TokenProvider tokenProvider;
-
+  private final TicketLoadTestAuthFilter ticketLoadTestAuthFilter;
   @Qualifier("dbUserDetailsService")
   private final UserDetailsService userDetailsService;
+  private final HttpMetricsFilter httpMetricsFilter;
 
   @Autowired
   Environment env;
@@ -124,8 +128,17 @@ public class SecurityConfig {
   public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
-        .authorizeHttpRequests(
-            authorizeHttpRequests -> authorizeHttpRequests.antMatchers("/",
+        .addFilterBefore(
+            ticketLoadTestAuthFilter,
+            UsernamePasswordAuthenticationFilter.class
+        )
+        .addFilterBefore(
+            httpMetricsFilter,
+            FilterSecurityInterceptor.class
+        )
+        .authorizeHttpRequests(auth -> auth
+            .antMatchers(HttpMethod.POST, "/api/tickets").authenticated()
+            .antMatchers("/",
                     "/api/members/register",
                     "/api/members/login",
                     "/members/login",
@@ -146,17 +159,20 @@ public class SecurityConfig {
                     "/api/home",
                     "/api/musicals/**")
                 .permitAll()
+
                 .antMatchers("/api/musicals/*/seats-availability").authenticated()
                 .antMatchers("/api/musicals/*/schedule/**").authenticated()
                 .antMatchers("/api/musicals/*/booking/queue").authenticated()
                 .antMatchers("/api/musicals/*/seats/reserve").authenticated()
                 .antMatchers("/api/musicals/*/tickets").authenticated()
                 .anyRequest().authenticated())
+
         .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
             SessionCreationPolicy.STATELESS))
 
         .headers(headers -> headers.frameOptions(options -> options.sameOrigin()))
-        .addFilterBefore(new JwtFilter(tokenProvider),
+        .addFilterBefore(
+            new JwtFilter(tokenProvider),
             UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

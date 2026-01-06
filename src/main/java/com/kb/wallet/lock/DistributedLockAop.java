@@ -1,5 +1,7 @@
 package com.kb.wallet.lock;
 
+import com.kb.wallet.global.common.status.ErrorCode;
+import com.kb.wallet.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -36,22 +38,29 @@ public class DistributedLockAop {
     String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
     RLock rLock = redissonClient.getLock(key);
 
+    boolean locked = false;
     try {
-      boolean available = rLock.tryLock(distributedLock.waitTime(), -1, distributedLock.timeUnit());
-      if (!available) {
-        return false;
+      locked = rLock.tryLock(0, distributedLock.leaseTime(), distributedLock.timeUnit());
+      if (!locked) {
+        log.info("Lock acquisition failed: {}", key);
+        throw new CustomException(ErrorCode.SEAT_LOCKED_BY_ANOTHER_USER);
       }
 
       return aopForTransaction.proceed(joinPoint);
-    } catch (InterruptedException e) {
-      throw new InterruptedException();
+
     } finally {
-      try {
-        rLock.unlock();
-      } catch (IllegalMonitorStateException e) {
-        log.info("Redisson Lock Already UnLock {} {}",
-            method.getName(),
-            key
+      if (locked && rLock.isHeldByCurrentThread()) {
+        // 트랜잭션 commit 이후에 unlock
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+            new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
+              @Override
+              public void afterCompletion(int status) {
+                if (rLock.isHeldByCurrentThread()) {
+                  rLock.unlock();
+                  log.info("Lock released after transaction commit: {}", key);
+                }
+              }
+            }
         );
       }
     }

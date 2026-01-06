@@ -18,11 +18,11 @@ public class MetricsConfig {
     registry.config().commonTags(
         "application", "ticket-app"
     );
-//    new ClassLoaderMetrics().bindTo(registry);
+    new ClassLoaderMetrics().bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
     new JvmGcMetrics().bindTo(registry);
 //    new ProcessorMetrics().bindTo(registry);
-//    new UptimeMetrics().bindTo(registry);
+    new UptimeMetrics().bindTo(registry);
     new JvmThreadMetrics().bindTo(registry);
 
     return registry;

@@ -55,8 +55,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 })
 @EnableJpaAuditing
 @EnableTransactionManagement
-@RequiredArgsConstructor
 @EnableAspectJAutoProxy
+@RequiredArgsConstructor
 public class AppConfig {
   private final DataSource dataSource;
   private final Properties jpaProperties;
